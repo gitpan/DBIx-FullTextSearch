@@ -1,3 +1,6 @@
+0.71 September 18th 2002
+        Updated MANIFEST to include missing files.
+
 0.70 September 1st 2002
 	Added support for boolean queries (AND, OR) using Parse::RecDescent
 

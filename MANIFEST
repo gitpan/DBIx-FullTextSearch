@@ -2,6 +2,8 @@ Changes
 MANIFEST
 Makefile.PL
 README
+README.developer
+TODO
 admin.cgi
 ftsadmin
 lib/DBIx/FullTextSearch.pm

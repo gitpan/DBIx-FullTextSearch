@@ -12,7 +12,7 @@ use Parse::RecDescent;
 
 use vars qw($errstr $VERSION $parse);
 $errstr = undef;
-$VERSION = '0.70';
+$VERSION = '0.71';
 
 use locale;
 
@@ -1122,7 +1122,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.70.
+This documentation describes DBIx::FullTextSearch module version 0.71.
 
 =head1 BUGS
 
