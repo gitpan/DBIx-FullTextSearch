@@ -12,6 +12,10 @@ sub _create_tables {
 	$fts->{'doc_id_table'} = $fts->{'table'} . '_docid'
 			unless defined $fts->{'doc_id_table'};
 
+	unless($fts->{'name_length'}){
+	  return "The parameter name_length has to be specified.";
+	}
+
 	my $CREATE_DOCID = <<EOF;
 		create table $fts->{'doc_id_table'} (
 			name varchar($fts->{'name_length'}) binary not null,

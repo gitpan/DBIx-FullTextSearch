@@ -9,13 +9,13 @@ use Getopt::Long;
 my $dummy;
 
 my $USAGE = <<'EOF';
-Usage: mycontextadmin [ --version | [ datasource [ --create | --list |
-		context_index_name [ --contains list_of_words |
+Usage: ftsadmin [ --version | [ datasource [ --create | --list |
+		fts_index_name [ --contains list_of_words |
 			--econtains list_of_expressions ] ] ] ]
 
 Examples:
-mycontextadmin adelton/heslo@test --list	# lists context_indexes
-mycontextadmin adelton/heslo@test --create index1 --frontend file --backend blob
+ftsadmin user/pass@db --list	# lists fts_indexes
+ftsadmin user/pass@db --create index1 --frontend file --backend blob
 						# creates index
 EOF
 
@@ -23,7 +23,7 @@ unless (@ARGV) { die $USAGE; }
 
 
 if ($ARGV[0] eq '--version' or $ARGV[0] eq '-v') {
-	print "This is mycontextadmin version $DBIx::FullTextSearch::VERSION.\n";
+	print "This is ftsadmin version $DBIx::FullTextSearch::VERSION.\n";
 	exit;
 	}
 
@@ -41,10 +41,10 @@ my $dbh = DBI->connect($dsn, $user, $password)
 
 
 
-unless (@ARGV) { die "Command or ConText index name expected after datasource.\n"; }
+unless (@ARGV) { die "Command or DBIx::FullTextSearch index name expected after datasource.\n"; }
 
 if ($ARGV[0] eq '--list') {
-	my @list = DBIx::FullTextSearch->list_context_indexes($dbh);
+	my @list = DBIx::FullTextSearch->list_fts_indexes($dbh);
 	for my $name (@list) { print $name, "\n"; }
 	exit;
 	}
@@ -57,7 +57,7 @@ if ($ARGV[0] eq '--create') {
 	my %options = ();
 	GetOptions(\%options,
 		'frontend=s', 'backend=s',
-		'word_id_bits=i', 'doc_id_bits=i', 'count_bits=i'
+		'word_id_bits=i', 'doc_id_bits=i', 'count_bits=i',
 		'word_length=i', 'blob_direct_fetch=i', 'data_table=s',
 		'name_length=i', 'position_bits=i', 'filter=s',
 		'splitter=s', 'init_env=s', 'word_id_table=s',
@@ -102,29 +102,29 @@ else {
 
 =head1 NAME
 
-mycontextadmin - command line admin utility for DBIx::FullTextSearch
+ftsadmin - command line admin utility for DBIx::FullTextSearch
 
 =head1 SYNOPSIS
 
-  mycontextadmin jez/hes@test --create zvirata --frontend=string
-  mycontextadmin jez/hes@test zvirata --index slon 'Slon ma chobot'
-  mycontextadmin jez/hes@test zvirata --index krtek 'Krtek ma bodliny'
-  mycontextadmin jez/hes@test zvirata --contains bodliny
+  ftsadmin jez/hes@test --create zvirata --frontend=string
+  ftsadmin jez/hes@test zvirata --index slon 'Slon ma chobot'
+  ftsadmin jez/hes@test zvirata --index krtek 'Krtek ma bodliny'
+  ftsadmin jez/hes@test zvirata --contains bodliny
 
 =head1 DESCRIPTION
 
-Mycontextadmin is a command line utility for listing, creating
+ftsadmin is a command line utility for listing, creating
 and dropping of DBIx::FullTextSearch indexes and for indexing new documents and
-searching for matches. The schematic listing of mycontextadmin arguments
+searching for matches. The schematic listing of ftsadmin arguments
 is:
 
-  mycontextadmin --version
-  mycontextadmin user@pass/db --list
-  mycontextadmin user@pass/db --create index_name [ parameters ]
-  mycontextadmin user@pass/db index_name --index doc_name [ content ]
-  mycontextadmin user@pass/db index_name --contains list_of_words
-  mycontextadmin user@pass/db index_name --econtains list_of_words
-  mycontextadmin user@pass/db index_name --drop
+  ftsadmin --version
+  ftsadmin user/pass@db --list
+  ftsadmin user/pass@db --create index_name [ parameters ]
+  ftsadmin user/pass@db index_name --index doc_name [ content ]
+  ftsadmin user/pass@db index_name --contains list_of_words
+  ftsadmin user/pass@db index_name --econtains list_of_words
+  ftsadmin user/pass@db index_name --drop
 
 For command --version that return the version information of the
 underlying DBIx::FullTextSearch module no user or database specification is needed.
@@ -181,7 +181,7 @@ redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-DBIx::FullTextSearch(3).
+L<DBIx::FullTextSearch>
 
 =cut
 

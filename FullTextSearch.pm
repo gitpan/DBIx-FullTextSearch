@@ -81,7 +81,7 @@ sub open {
 	$sth->{'RaiseError'} = 0;
 	$sth->execute or do {
 		if (not grep { $TABLE eq $_ }
-					DBIx::FullTextSearch->list_context_indexes($dbh)) {
+					DBIx::FullTextSearch->list_fts_indexes($dbh)) {
 			$errstr = "FullTextSearch index $TABLE doesn't exist.";
 			}
 		else { $errstr = $sth->errstr; }
@@ -225,7 +225,7 @@ sub errstr {
 	ref $self ? $self->{'errstr'} : $errstr;
 	}
 
-sub list_context_indexes {
+sub list_fts_indexes {
 	my ($class, $dbh) = @_;
 	my %tables = map { ( $_->[0] => 1 ) }
 			@{$dbh->selectall_arrayref('show tables')};
@@ -451,6 +451,7 @@ sub common_word {
   my $k = shift || 80;
   $self->{'db_backend'}->common_word($k);
 }
+
 
 1;
 
@@ -735,7 +736,7 @@ words.
 
 =item search
 
-        my @docs = $fts->search(qq{+"this is a phrase" -koo +bar foo});
+ my @docs = $fts->search(qq{+"this is a phrase" -koo +bar foo});
 
 This is a wrapper to econtains which takes a user input string and parses
 it into can-include, must-include, and must-not-include words and phrases.
@@ -745,13 +746,13 @@ it into can-include, must-include, and must-not-include words and phrases.
 Removes all tables associated with the index, including the base
 parameter table. Effectivelly destroying the index form the database.
 
-        $fts->drop;
+ $fts->drop;
 
 =item empty
 
 Emptys the index so you can reindex the data.
 
-        $fts->empty;
+ $fts->empty;
 
 =back
 
@@ -927,20 +928,21 @@ No support for stop words at the moment.
 
 =head1 AUTHOR
 
-(c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
-http://www.thoughtstore.com/~tjmather/perl/
-New York, NY, USA
+(Original) Jan Pazdziora, adelton@fi.muni.cz,
+http://www.fi.muni.cz/~adelton/ at Faculty of Informatics, Masaryk University in Brno, Czech
+Republic
 
-(c) 1999 Jan Pazdziora, adelton@fi.muni.cz,
-http://www.fi.muni.cz/~adelton/ at Faculty of Informatics, Masaryk
-University in Brno, Czech Republic
+(Current Maintainer) Thomas J. Mather, tjmather@alumni.princeton.edu,
+http://www.thoughtstore.com/~tjmather/ New York, NY, USA
+
+=head1 COPYRIGHT
 
 All rights reserved. This package is free software; you can
 redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-DBI(3), mycontextadmin(1).
+DBI, ftsadmin
 
 =head1 OTHER PRODUCTS and why I've written this module
 

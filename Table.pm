@@ -66,7 +66,7 @@ sub _create_tables {
 		return "The table `$table' doesn't exist.";
 		}
 
-### use Data::Dumper; print Dumper $info;
+# use Data::Dumper; print Dumper $info;
 
 	if (not defined $id) {
 		# search for column with primary key
@@ -85,7 +85,19 @@ sub _create_tables {
 			return "No primary key found in the table `$table'.";
 			}
 		}
+	else {
+	  # find '$id' column
+	  for my $i (0 .. $#$info) {
+	    if ($info->[$i][0] eq $id){
+	      $id_type = $info->[$i][1];
+	      last;
+	    }
+	  }
+	}
 
+	unless(defined $id_type){
+	  return "No key named '$id' found in the table '$table'";
+	}
 
 	my $testcol = $dbh->prepare("select $column from $table where 1 = 0");
 	$testcol->execute or
@@ -94,7 +106,9 @@ sub _create_tables {
 
 	$fts->{'column_id_name'} = $id;
 
-	if ($id_type =~ /^\w*int\((\d+)\)$/) {
+	my $errstr;
+
+	if ($id_type =~ /int\((\d+)\)/) {
 		$fts->{'doc_id_bits'} = $DBIx::FullTextSearch::PRECISION_TO_BITS{$1};
 		bless $fts, 'DBIx::FullTextSearch::TableNum';
 		}
@@ -103,10 +117,10 @@ sub _create_tables {
 		$fts->{'name_length'} = $1;
 		eval 'use DBIx::FullTextSearch::String';
 		bless $fts, 'DBIx::FullTextSearch::TableString';
-		$fts->DBIx::FullTextSearch::String::_create_tables($fts);
+		$errstr = $fts->DBIx::FullTextSearch::String::_create_tables($fts);
 		}
 ### use Data::Dumper; print Dumper $fts;
-	return;
+	return $errstr;
 	}
 
 sub get_the_data_from_table {
@@ -119,9 +133,9 @@ sub get_the_data_from_table {
 			where $self->{'column_id_name'} = ?
 			") );
 
-	my ($data) = $dbh->selectrow_array($get_data, {}, $id);
-	$data;
+	my @data_ary = $dbh->selectrow_array($get_data, {}, $id);
+	my $data = join (" ", @data_ary);
+	return $data;
 	}
 
 1;
-

@@ -1,4 +1,8 @@
-0.51 Mon Jun 26 0:41:46  EST 2000
+0.52 Tue Jun 27 12:23:02 EST 2000
+
+	Renamed mycontextadmin to ftsadmin and fixed bugs.
+
+0.51 Mon Jun 26 00:41:46 EST 2000
 
 	Added new method "empty" that empties index
 
@@ -8,7 +12,7 @@
 
 	Fixed bug with %PRECISION_TO_BITS - failed with mediumint(8) column_id_name
 
-0.50 Fri Jun 16 16:41:05  EST 2000
+0.50 Fri Jun 16 16:41:05 EST 2000
 
 	Rewrote contains method in Phrase.pm, now supports econtains, and
 	fixed bug with words that occur in more than one document.

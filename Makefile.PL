@@ -70,7 +70,7 @@ WriteMakefile(
 			'Table.pm' => '$(INST_LIBDIR)/FullTextSearch/Table.pm',
 			'testconfig/DBIx/FullTextSearch/TestConfig.pm' => '$(INST_LIBDIR)/FullTextSearch/TestConfig.pm',
 			},
-	MAN1PODS =>	{ 'mycontextadmin' => '$(INST_MAN1DIR)/mycontextadmin.1' },
+	MAN1PODS =>	{ 'ftsadmin' => '$(INST_MAN1DIR)/ftsadmin.1' },
 	dist =>		{ COMPRESS => 'gzip -9f', SUFFIX => 'gz',
 			POSTOP => 'mv $(DISTNAME)-$(VERSION).tar.gz ../' },
 	macro =>	{ BENCH_FILES => 'bench/*.t' },

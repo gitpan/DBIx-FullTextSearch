@@ -118,9 +118,7 @@ Problems and bug reports:
 
 Success reports and ideas:
 	I'll appreciate and ideas and comments you might have about the
-	module. Ideas about better name (or analysis of legal side of
-	the name DBIx::FullTextSearch that is inspired by Oracle's ConText) are
-	also welcome.
+	module.
 	
 	BTW, before you start flaming me that I've written this module
 	when others are available, please read my reasons in the

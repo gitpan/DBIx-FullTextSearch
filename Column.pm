@@ -134,6 +134,34 @@ sub contains_hashref {
         $out;
 	}
 
+
+
+sub common_word {
+  my ($self, $k) = @_;
+  my $fts = $self->{'fts'};
+  my $dbh = $fts->{'dbh'};
+
+  my $num = $fts->document_count;
+
+  $k /= 100;
+
+  my $SQL = qq{
+    select word_id, count(*)/$num as k
+    from $fts->{'data_table'}
+    group by word_id
+    having k>=$k
+  };
+  my $ary_ref = $dbh->selectcol_arrayref($SQL);
+  my $word_id_string = join(',',@$ary_ref);
+  return unless $word_id_string;
+  $SQL = qq{
+    select word
+    from $fts->{'word_id_table'}
+    where id IN ($word_id_string)
+  };
+  return $dbh->selectcol_arrayref($SQL);
+}
+
 *parse_and_index_data = \&DBIx::FullTextSearch::parse_and_index_data_count;
 
 1;

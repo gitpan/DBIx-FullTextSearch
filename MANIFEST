@@ -11,7 +11,7 @@ String.pm
 Table.pm
 URL.pm
 admin.cgi
-mycontextadmin
+ftsadmin
 t/0_base.t
 t/1_create.t
 t/2_drop.t
