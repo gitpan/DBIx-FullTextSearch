@@ -1,3 +1,8 @@
+0.60 Tue Dec 18 21:43:37 EST 2001
+
+	Removed extranous code in Phrase contains_hashref
+	including unneeded order by in SQL statement (Tony Bowden)
+
 0.59 Sat Dec 15 01:17:34 EST 2001
 
         Added search_hashref method (Dan Collis Puro)

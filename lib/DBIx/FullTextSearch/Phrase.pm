@@ -111,7 +111,6 @@ sub contains_hashref {
 		from $data_table, $word_id_table
 		where word like ?
 			and id = word_id
-		order by doc_id
 };
 	my $out = {};
 
@@ -160,8 +159,6 @@ sub contains_hashref {
 			my @positions = keys %{$cur_pos{$doc}};
 			$out->{$doc} += scalar (@positions);
 		}
-	}
-	for my $doc (keys %$out){
 	}
 	return $out;
 }

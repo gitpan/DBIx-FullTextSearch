@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.59';
+$VERSION = '0.60';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -1042,7 +1042,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.59.
+This documentation describes DBIx::FullTextSearch module version 0.60.
 
 =head1 BUGS
 
@@ -1084,6 +1084,7 @@ Fixes, Bug Reports, Docs have been generously provided by:
   Tarik Alkasab
   Joern Reder
   Dan Collis Puro
+  Tony Bowden
   Stephen Patterson
 
 Of course, big thanks to Jan Pazdziora, the original author of this
