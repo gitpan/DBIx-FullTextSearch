@@ -1,3 +1,4 @@
+# -*- Mode: Perl; indent-tabs-mode: t; tab-width: 2 -*-
 
 =head1 NAME
 
@@ -7,10 +8,11 @@ DBIx::FullTextSearch - Indexing documents with MySQL as storage
 
 package DBIx::FullTextSearch;
 use strict;
+use Parse::RecDescent;
 
-use vars qw($errstr $VERSION);
+use vars qw($errstr $VERSION $parse);
 $errstr = undef;
-$VERSION = '0.62';
+$VERSION = '0.70';
 
 use locale;
 
@@ -189,7 +191,7 @@ sub create {
 EOF
 	$dbh->do($CREATE_PARAM) or do { $errstr = $dbh->errstr; return; };
 	push @{$self->{'created_tables'}}, $TABLE;
-  
+
 	# load and set the frontend database structures
 	my $front_module = $frontend_types{$self->{'frontend'}};
 	if (defined $front_module) {
@@ -520,13 +522,74 @@ sub _search_terms {
 	}
 }
 
+sub _search_boolean {
+	my ($self, $query) = @_;
+
+	unless ($parse) {
+		$::RD_AUTOACTION = q{ [@item] };
+		my $grammar = q{
+        expr    :       disj
+        disj    :       conj 'or' disj | conj
+        conj    :       unary 'and' conj | unary
+        unary   :       '(' expr ')'
+                |       atom
+        atom    :       /([^\(\)\s]|\s(?!and)(?!or))+/
+			};
+		$parse = new Parse::RecDescent ($grammar);
+	}
+	my $tree = $parse->expr($query);
+	return $self->_search_in_tree($tree);
+}
+
+sub _search_in_tree {
+	my ($self, $tree) = @_;
+
+	if (ref($tree->[1]) && ref($tree->[3])) {
+		if (defined($tree->[2]) && $tree->[2] eq 'and') {
+			my $hash_ref1 = $self->_search_in_tree($tree->[1]);
+			my $hash_ref2 = $self->_search_in_tree($tree->[3]);
+			for my $k (keys %$hash_ref1) {
+				unless ($hash_ref2->{$k}) {
+					delete $hash_ref1->{$k};
+				} else {
+					$hash_ref1->{$k} += $hash_ref2->{$k};
+				}
+			}
+			return $hash_ref1;
+		} elsif (defined($tree->[2]) && $tree->[2] eq 'or') {
+			my $hash_ref1 = $self->_search_in_tree($tree->[1]);
+			my $hash_ref2 = $self->_search_in_tree($tree->[3]);
+			for my $k (keys %$hash_ref2) {
+				$hash_ref1->{$k} += $hash_ref2->{$k};
+			}
+			return $hash_ref1;
+		}
+		return {};
+  } elsif ($tree->[1] eq '(' && ref($tree->[2]) && $tree->[3] eq ')') {
+		return $self->_search_in_tree($tree->[2]);
+	} elsif (ref($tree->[1])) {
+		return $self->_search_in_tree($tree->[1]);
+	} elsif (defined($tree->[0]) && $tree->[0] eq 'atom') {
+		return $self->econtains_hashref($self->_search_terms($tree->[1]));
+	} else {
+		warn "Unknown tree nodes " . join("\t", @$tree);
+		return {};
+	}
+}
+
 sub search {
 	my ($self, $query) = @_;
+	if ($query =~ s/\b(and|or|not)\b/lc($1)/eig) {
+		return keys %{$self->_search_boolean($query)};
+	}
 	return $self->econtains($self->_search_terms($query));
 }
 
 sub search_hashref {
 	my ($self, $query) = @_;
+	if ($query =~ s/\b(and|or|not)\b/lc($1)/eig) {
+		return $self->_search_boolean($query);
+	}
 	return $self->econtains_hashref($self->_search_terms($query));
 }
 
@@ -553,6 +616,10 @@ sub common_word {
 
 =head1 SYNOPSIS
 
+DBIx::FullTextSearch uses a MySQL database backend to index files, web
+documents and database fields.  Supports must include, can include, and cannot
+include words and phrases.  Support for boolean (AND/OR) queries, stop words and stemming.
+
     use DBIx::FullTextSearch;
     use DBI;
     # connect to database (regular DBI)
@@ -576,6 +643,7 @@ sub common_word {
     my @docs = $fts->contains('foo');
     my @docs = $fts->econtains('+foo', '-Bar');
     my @docs = $fts->search('+foo -Bar');
+    my @docs = $fts->search('foo AND (bar OR baz)');
 
 =head1 DESCRIPTION
 
@@ -837,9 +905,11 @@ present in the document for it to match.
 =item search
 
  my @docs = $fts->search(qq{+"this is a phrase" -koo +bar foo});
+ my @docs = $fts->search("(foo OR baz) AND (bar OR caz)");
 
 This is a wrapper to econtains which takes a user input string and parses
 it into can-include, must-include, and must-not-include words and phrases.
+It also can handle boolean (AND/OR) queries.
 
 =item contains_hashref, econtains_hashref, search_hashref
 
@@ -1052,7 +1122,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.60.
+This documentation describes DBIx::FullTextSearch module version 0.70.
 
 =head1 BUGS
 
@@ -1097,6 +1167,8 @@ Fixes, Bug Reports, Docs have been generously provided by:
   Dan Collis Puro
   Tony Bowden
   Stephen Patterson
+  Joern Reder
+  Hans Poo
 
 Of course, big thanks to Jan Pazdziora, the original author of this
 module.  Especially for providing a clean, modular code base!

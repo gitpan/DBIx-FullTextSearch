@@ -6,7 +6,7 @@ $^W = 1;
 
 require 't/test.lib';
 
-print "1..9\n";
+print "1..10\n";
 
 use DBIx::FullTextSearch;
 use Benchmark;
@@ -96,3 +96,10 @@ print "Got: @docs\n";
 print "Expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 9\n";
 
+@param = 'here and (krtek or here)';
+print "Calling search(@param)\n";
+@docs = sort($fts->search(@param));
+$expected = '16 4';
+print "Got: @docs\n";
+print "Expected $expected\nnot " unless "@docs" eq $expected;
+print "ok 10\n";

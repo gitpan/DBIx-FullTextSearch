@@ -1,3 +1,6 @@
+0.70 September 1st 2002
+	Added support for boolean queries (AND, OR) using Parse::RecDescent
+
 0.63 June 21 2002
 	Improved performance for add_document in Phrase and Column backends
 	(Taco Hoekwater)

@@ -79,6 +79,7 @@ WriteMakefile(
 			'lib/DBIx/FullTextSearch/Table.pm' => '$(INST_LIBDIR)/FullTextSearch/Table.pm',
 			'testconfig/DBIx/FullTextSearch/TestConfig.pm' => '$(INST_LIBDIR)/FullTextSearch/TestConfig.pm',
 			},
+	PREREQ_PM =>    { 'Parse::RecDescent' => 0},
 	MAN1PODS =>	{ 'ftsadmin' => '$(INST_MAN1DIR)/ftsadmin.1' },
 	dist =>		{ COMPRESS => 'gzip -9f', SUFFIX => 'gz',
 			POSTOP => 'mv $(DISTNAME)-$(VERSION).tar.gz ../' },
