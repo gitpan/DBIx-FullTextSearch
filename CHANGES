@@ -1,8 +1,20 @@
+0.54 Tue Aug 29 16:01:12 EST 2000
+
+        Fixed test suites (1_create.t and 4_index_table.t) to support MySQL 3.23 versions
+        Thanks to Tarik Alkasab <tarik@alkasab.com> for bug fixes.
+
+        Added test script for stoplists.
+
+0.535 Wed Aug  9 16:30:26 MET DST 2000
+	Added blobfast backend that does updating by adding the info
+	to the end of the blob and with searches ignores previous
+	occurencies. (Honza Pazdziora)
+
 0.53 Mon Jul 10 10:31:13 EST 2000
 
 	Added new module DBIx::FullTextSearch::StopList that implements stoplists.
 
-	Added stemming capability through Lingua::Stem
+	Added stemming capability through Lingua::Stem.
 
 	Use of splitter on searches as well as indexing.
 
@@ -12,13 +24,13 @@
 
 0.51 Mon Jun 26 00:41:46 EST 2000
 
-	Added new method "empty" that empties index
+	Added new method "empty" that empties index.
 
-	Table frontend now supports multiple columns in column_name field
+	Table frontend now supports multiple columns in column_name field.
 
-	Fixed bug with setting column_id_name
+	Fixed bug with setting column_id_name.
 
-	Fixed bug with %PRECISION_TO_BITS - failed with mediumint(8) column_id_name
+	Fixed bug with %PRECISION_TO_BITS - failed with mediumint(8) column_id_name.
 
 0.50 Fri Jun 16 16:41:05 EST 2000
 

@@ -17,6 +17,7 @@ print "ok 1\n";
 print "We will drop all the tables first\n";
 for (qw! _fts_test _fts_test_data _fts_test_words _fts_test_docid 
 		_fts_test_the_table !) {
+	local $dbh->{'RaiseError'} = 0;
 	local $dbh->{'PrintError'} = 0;
 	$dbh->do("drop table $_");
 	}
@@ -26,7 +27,7 @@ print "ok 2\n";
 
 print "We will create the _fts_test_the_table table\n";
 $dbh->do('create table _fts_test_the_table (id tinyint not null,
-			data varchar(255),
+			t_data varchar(255),
 			primary key(id))');
 
 print "ok 3\n";
@@ -39,7 +40,7 @@ my $fts;
 print "Creating DBIx::FullTextSearch index with table frontend\n";
 $fts = DBIx::FullTextSearch->create($dbh, '_fts_test',
 	'frontend' => 'table', 'table_name' => '_fts_test_the_table',
-	'column_name' => 'data')
+	'column_name' => 't_data')
 					or print "$DBIx::FullTextSearch::errstr\nnot ";
 print "ok 4\n";
 
@@ -98,7 +99,7 @@ $dbh->do('drop table _fts_test_the_table');
 
 print "We will create the _fts_test_the_table table\n";
 $dbh->do('create table _fts_test_the_table (name varchar(14) not null,
-			data varchar(255),
+			t_data varchar(255),
 			primary key(name))');
 
 print "ok 10\n";
@@ -109,7 +110,7 @@ $dbh->do(q!insert into _fts_test_the_table values ('krtek', 'krtek bodliny nema'
 print "Creating DBIx::FullTextSearch index with table frontend against stringed table\n";
 $fts = DBIx::FullTextSearch->create($dbh, '_fts_test',
 	'frontend' => 'table', 'table_name' => '_fts_test_the_table',
-	'column_name' => 'data')
+	'column_name' => 't_data')
 					or print "$DBIx::FullTextSearch::errstr\nnot ";
 print "ok 11\n";
 

@@ -13,7 +13,7 @@ sub _create_tables {
 			unless defined $fts->{'doc_id_table'};
 
 	unless($fts->{'name_length'}){
-	  return "The parameter name_length has to be specified.";
+		return "The parameter name_length has to be specified.";
 	}
 
 	my $CREATE_DOCID = <<EOF;
@@ -28,7 +28,7 @@ EOF
 	$dbh->do($CREATE_DOCID) or return $dbh->errstr;
 	push @{$fts->{'created_tables'}}, $fts->{'doc_id_table'};
 	return;
-	}
+}
 
 sub get_id_for_name {
 	my ($self, $string) = @_;
@@ -46,14 +46,15 @@ sub get_id_for_name {
 			$dbh->prepare("insert into $doc_id_table values (?, null)") or die $dbh->errstr );
 		$new_name_sth->execute($string) or die $new_name_sth->errstr;
 		$id = $new_name_sth->{'mysql_insertid'};
-		}
-	$id;
 	}
+	$id;
+}
+
 sub index_document {
 	my ($self, $string, $data) = @_;
 	my $id = $self->get_id_for_name($string);
 	$self->SUPER::index_document($id, $data);
-	}
+}
 
 sub contains_hashref {
 	my $self = shift;
@@ -64,7 +65,7 @@ sub contains_hashref {
 
 	my $data = $self->{'dbh'}->selectall_arrayref("select name, id from $doc_id_table where " . join(' or ', ('id = ?') x keys %$res), {}, keys %$res);
 	return { map { ( $_->[0], $res->{$_->[1]} ) } @$data };
-	}
+}
 
 
 1;

@@ -16,6 +16,7 @@ print "ok 1\n";
 
 print "We will drop all the tables first\n";
 for (qw! _fts_test _fts_test_data _fts_test_words _fts_test_docid !) {
+	local $dbh->{'RaiseError'} = 0;
 	local $dbh->{'PrintError'} = 0;
 	$dbh->do("drop table $_");
 	}
@@ -71,7 +72,7 @@ my (@docs, $expected);
 print "Calling contains('while')\n";
 @docs = sort($fts->contains('while'));
 print "Documents containing `while': @docs\n";
-$expected = 'Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Index.modul Makefile.file Makefile.old.file Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 5\n";
 
@@ -85,7 +86,7 @@ print "ok 6\n";
 print "Calling contains('whi*')\n";
 @docs = sort($fts->contains('whi*'));
 print "Documents containing `whi*': @docs\n";
-$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Base.modul Changes.file Index.modul Makefile.file Makefile.old.file Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 7\n";
 
@@ -103,7 +104,7 @@ print 'Removing took ', timestr(timediff($t1, $t0)), "\n";
 print "Calling contains('whi*')\n";
 @docs = sort($fts->contains('whi*'));
 print "Documents containing `whi*': @docs\n";
-$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul driver_characteristics dump';
+$expected = 'Base.modul Changes.file Index.modul Makefile.file Makefile.old.file Memo.modul MyConText.modul SQL.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 9\n";
 
@@ -122,7 +123,7 @@ print 'Reindexing took ', timestr(timediff($t1, $t0)), "\n";
 print "Calling contains('whi*')\n";
 @docs = sort($fts->contains('whi*'));
 print "Documents containing `whi*': @docs\n";
-$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Base.modul Changes.file Index.modul Makefile.file Makefile.old.file Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 11\n";
 

@@ -26,22 +26,14 @@ print "ok 2\n";
 my $fts;
 
 
-print "Creating DBIx::FullTextSearch index with file frontend and column backend\n";
+print "Creating DBIx::FullTextSearch index with file frontend\n";
 $fts = DBIx::FullTextSearch->create($dbh, '_fts_test',
-	'backend' => 'column',
-	'frontend' => 'file') or print "$DBIx::FullTextSearch::errstr\nnot ";
+	'frontend' => 'file', 'backend' => 'blobfast') or print "$DBIx::FullTextSearch::errstr\nnot ";
 print "ok 3\n";
 
 
 my $DIR = 'test_data';
 chdir $DIR or die "Cannot chdir to $DIR\n";
-
-print <<EOF;
-Indexing documents in directory $DIR, may take a while ...
-  FYI, version 0.22 did these 19 files (4789 words) in
-    12 wallclock secs ( 2.60 usr +  0.73 sys =  3.33 CPU)
-  on my AMD 133 running Linux
-EOF
 
 use Benchmark;
 
@@ -135,4 +127,5 @@ print "Documents containing `zvirata': @docs\n";
 $expected = 'XBase.modul';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 12\n";
+
 

@@ -17,12 +17,12 @@ sub index_document {
 	my $response = $ua->simple_request($request);
 	if ($response->is_success) {
 		return $self->SUPER::index_document($uri, $response->content);
-		}
+	}
 	else {
 		$self->{'errstr'} = $response->message;
-		}
-	return;
 	}
+	return;
+}
 
 1;
 

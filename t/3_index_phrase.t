@@ -16,6 +16,7 @@ print "ok 1\n";
 
 print "We will drop all the tables first\n";
 for (qw! _fts_test _fts_test_data _fts_test_words _fts_test_docid !) {
+	local $dbh->{'RaiseError'} = 0;
 	local $dbh->{'PrintError'} = 0;
 	$dbh->do("drop table $_");
 	}

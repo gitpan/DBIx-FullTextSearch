@@ -7,7 +7,7 @@ sub index_document {
 	my ($self, $id) = @_;
 	my $data = $self->get_the_data_from_table($id);
 	$self->SUPER::index_document($id, $data);
-	}
+}
 
 package DBIx::FullTextSearch::TableNum;
 use vars qw! @ISA !;
@@ -17,7 +17,7 @@ sub index_document {
 	my ($self, $id) = @_;
 	my $data = $self->get_the_data_from_table($id);
 	$self->SUPER::index_document($id, $data);
-	}
+}
 
 
 package DBIx::FullTextSearch::Table;
@@ -31,11 +31,11 @@ sub _open_tables {
 	if (defined $self->{'doc_id_table'}) {
 		eval 'use DBIx::FullTextSearch::String';
 		bless $self, 'DBIx::FullTextSearch::TableString';
-		}
+	}
 	else {
 		bless $self, 'DBIx::FullTextSearch::TableNum';
-		}
 	}
+}
 
 # we do not create any new tables, we just check that the parameters are
 # OK (the table and columns exist, etc.)
@@ -44,16 +44,16 @@ sub _create_tables {
 	my ($table, $column, $id) = @{$fts}{ qw! table_name column_name
 		column_id_name ! };
 	if (not defined $table and $column =~ /\./) {
-		($table, $column) =~ ($column =~ /^(.*)\.(.*)$/s);
-		}
+		($table, $column) = ($column =~ /^(.*)\.(.*)$/s);
+	}
 	my $id_type;
 
 	if (not defined $table) {
 		return "The parameter table_name has to be specified with the table frontend.";
-		}
+	}
 	if (not defined $column) {
 		return "The parameter column_name has to be specified with the table frontend.";
-		}
+	}
 	my $dbh = $fts->{'dbh'};
 	my $sth = $dbh->prepare("show columns from $table");
 	$sth->{'PrintError'} = 0;
@@ -64,7 +64,7 @@ sub _create_tables {
 			{ 'PrintError' => 0, 'RaiseError' => 0 });
 	if (not defined $info) {
 		return "The table `$table' doesn't exist.";
-		}
+	}
 
 # use Data::Dumper; print Dumper $info;
 
@@ -76,27 +76,27 @@ sub _create_tables {
 				$pri_num++;
 				$id = $info->[$i][0];
 				$id_type = $info->[$i][1];
-				}
-			}
-		if ($pri_num > 1) {
-			return 'The primary key has to be one-column.';
-			}	
-		if ($pri_num == 0) {
-			return "No primary key found in the table `$table'.";
 			}
 		}
+		if ($pri_num > 1) {
+			return 'The primary key has to be one-column.';
+		}	
+		if ($pri_num == 0) {
+			return "No primary key found in the table `$table'.";
+		}
+	}
 	else {
-	  # find '$id' column
-	  for my $i (0 .. $#$info) {
-	    if ($info->[$i][0] eq $id){
-	      $id_type = $info->[$i][1];
-	      last;
-	    }
-	  }
+		# find '$id' column
+		for my $i (0 .. $#$info) {
+			if ($info->[$i][0] eq $id){
+				$id_type = $info->[$i][1];
+				last;
+			}
+		}
 	}
 
 	unless(defined $id_type){
-	  return "No key named '$id' found in the table '$table'";
+		return "No key named '$id' found in the table '$table'";
 	}
 
 	my $testcol = $dbh->prepare("select $column from $table where 1 = 0");
@@ -111,17 +111,17 @@ sub _create_tables {
 	if ($id_type =~ /int\((\d+)\)/) {
 		$fts->{'doc_id_bits'} = $DBIx::FullTextSearch::PRECISION_TO_BITS{$1};
 		bless $fts, 'DBIx::FullTextSearch::TableNum';
-		}
+	}
 	else {
 		my ($length) = ($id_type =~ /^\w+\((\d+)\)$/);
 		$fts->{'name_length'} = $1;
 		eval 'use DBIx::FullTextSearch::String';
 		bless $fts, 'DBIx::FullTextSearch::TableString';
 		$errstr = $fts->DBIx::FullTextSearch::String::_create_tables($fts);
-		}
+	}
 ### use Data::Dumper; print Dumper $fts;
 	return $errstr;
-	}
+}
 
 sub get_the_data_from_table {
 	my ($self, $id) = @_;
@@ -136,6 +136,6 @@ sub get_the_data_from_table {
 	my @data_ary = $dbh->selectrow_array($get_data, {}, $id);
 	my $data = join (" ", @data_ary);
 	return $data;
-	}
+}
 
 1;

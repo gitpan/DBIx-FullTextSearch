@@ -12,7 +12,7 @@ sub index_document {
 	open FILE, $file or do {
 		$self->{'errstr'} = "Reading the file `$file' failed: $!";
 		return;
-		};
+	};
 	my $data;
 	{
 		local $/ = undef;
@@ -20,7 +20,7 @@ sub index_document {
 	}
 	close FILE;
 	$self->SUPER::index_document($file, $data);
-	}
+}
 
 1;
 

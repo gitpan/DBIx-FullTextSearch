@@ -27,7 +27,7 @@ my $fts;
 
 
 print "Creating default DBIx::FullTextSearch index\n";
-$fts = DBIx::FullTextSearch->create($dbh, '_fts_test') or print "$DBIx::FullTextSearch::errstr\nnot ";
+$fts = DBIx::FullTextSearch->create($dbh, '_fts_test', 'backend' => 'blobfast') or print "$DBIx::FullTextSearch::errstr\nnot ";
 $fts = DBIx::FullTextSearch->open($dbh, '_fts_test') or print "$DBIx::FullTextSearch::errstr\nnot ";
 print "ok 3\n";
 

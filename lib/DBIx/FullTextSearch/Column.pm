@@ -6,14 +6,15 @@ use strict;
 sub open {
 	my ($class, $fts) = @_;
 	return bless { 'fts' => $fts }, $class;
-	}
+}
+
 # Create creates the table(s) according to the parameters
 sub _create_tables {
 	my ($class, $fts) = @_;
 	my $COUNT_FIELD = '';
 	if ($fts->{'count_bits'}) {
 		$COUNT_FIELD = "count $DBIx::FullTextSearch::BITS_TO_INT{$fts->{'count_bits'}} unsigned,"
-		}
+	}
 	my $CREATE_DATA = <<EOF;
 		create table $fts->{'data_table'} (
 			word_id $DBIx::FullTextSearch::BITS_TO_INT{$fts->{'word_id_bits'}} unsigned not null,
@@ -44,7 +45,8 @@ EOF
         $dbh->do($CREATE_WORD_ID) or return $dbh->errstr;
 	push @{$fts->{'created_tables'}}, $fts->{'word_id_table'};
 	return;
-	}
+}
+
 sub add_document {
 	my ($self, $id, $words) = @_;
 	my $fts = $self->{'fts'};
@@ -57,7 +59,7 @@ sub add_document {
 			");
 		$self->{'insert_wordid_sth'}->{'PrintError'} = 0;
 		$self->{'insert_wordid_sth'}->{'RaiseError'} = 0;
-		}
+	}
 	my $insert_wordid_sth = $self->{'insert_wordid_sth'};
 
 	my $count_bits = $fts->{'count_bits'};
@@ -79,14 +81,15 @@ sub add_document {
 		$insert_wordid_sth->execute($word);
 		if ($count_bits) {
 			$insert_worddoc_sth->execute($id, $words->{$word}, $word);
-			}
+		}
 		else {
 			$insert_worddoc_sth->execute($id, $word);
-			}
-		$num_words += $words->{$word};
 		}
-	return $num_words;
+		$num_words += $words->{$word};
 	}
+	return $num_words;
+}
+
 sub delete_document {
 	my $self = shift;
 	my $fts = $self->{'fts'};
@@ -94,12 +97,14 @@ sub delete_document {
 	my $data_table = $fts->{'data_table'};
 	my $sth = $dbh->prepare("delete from $data_table where doc_id = ?");
 	for my $id (@_) { $sth->execute($id); }
-	}
+}
+
 sub update_document {
 	my ($self, $id, $words) = @_;
 	$self->delete_document($id);
 	$self->add_document($id, $words);
-	}
+}
+
 sub contains_hashref {
 	my $self = shift;
 	my $fts = $self->{'fts'};
@@ -128,38 +133,38 @@ sub contains_hashref {
 		$sth->execute($word);
 		while (my ($doc, $count) = $sth->fetchrow_array) {
 			$out->{$doc} += $count;
-			}
-		$sth->finish;
 		}
-        $out;
+		$sth->finish;
 	}
-
-
+        $out;
+}
 
 sub common_word {
-  my ($self, $k) = @_;
-  my $fts = $self->{'fts'};
-  my $dbh = $fts->{'dbh'};
+        my ($self, $k) = @_;
+        my $fts = $self->{'fts'};
+        my $dbh = $fts->{'dbh'};
 
-  my $num = $fts->document_count;
+        my $num = $fts->document_count;
 
-  $k /= 100;
+        $k /= 100;
 
-  my $SQL = qq{
-    select word_id, count(*)/$num as k
-    from $fts->{'data_table'}
-    group by word_id
-    having k>=$k
-  };
-  my $ary_ref = $dbh->selectcol_arrayref($SQL);
-  my $word_id_string = join(',',@$ary_ref);
-  return unless $word_id_string;
-  $SQL = qq{
-    select word
-    from $fts->{'word_id_table'}
-    where id IN ($word_id_string)
-  };
-  return $dbh->selectcol_arrayref($SQL);
+        my $SQL = <<EOF;
+                select word_id, count(*)/? as k
+                from $fts->{'data_table'}
+                group by word_id
+                having k >= ?
+EOF
+        my $ary_ref = $dbh->selectcol_arrayref($SQL, {}, $num, $k);
+        return unless @$ary_ref;
+
+        my $QUESTION_MARKS = join ',', ('?') x scalar(@$ary_ref);
+
+        $SQL = <<EOF;
+                select word
+                from $fts->{'word_id_table'}
+                where id IN ($QUESTION_MARKS)
+EOF
+        return $dbh->selectcol_arrayref($SQL, {}, @$ary_ref);
 }
 
 *parse_and_index_data = \&DBIx::FullTextSearch::parse_and_index_data_count;

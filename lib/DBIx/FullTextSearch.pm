@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.53';
+$VERSION = '0.54';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -41,6 +41,7 @@ my %DEFAULT_PARAMS = (
 	);
 my %backend_types = (
 	'blob' => 'DBIx::FullTextSearch::Blob',
+	'blobfast' => 'DBIx::FullTextSearch::BlobFast',
 	'column' => 'DBIx::FullTextSearch::Column',
 	'phrase' => 'DBIx::FullTextSearch::Phrase',
 	);
@@ -63,452 +64,476 @@ use vars qw! %BITS_TO_PACK %BITS_TO_INT %PRECISION_TO_BITS !;
 # Open reads in the information about existing index, creates an object
 # in memory
 sub open {
-  my ($class, $dbh, $TABLE) = @_;
-  $errstr = undef;
-  
-  # the $dbh is either a real dbh of a DBI->connect parameters arrayref
-  my $mydbh = 0;
-  if (ref $dbh eq 'ARRAY') {
-    $dbh = DBI->connect(@$dbh) or
-      do { $errstr = $DBI::errstr; return; };
+	my ($class, $dbh, $TABLE) = @_;
+	$errstr = undef;
+
+	# the $dbh is either a real dbh of a DBI->connect parameters arrayref
+	my $mydbh = 0;
+	if (ref $dbh eq 'ARRAY') {
+		if (not $dbh = DBI->connect(@$dbh)) {
+			$errstr = $DBI::errstr; return;
+		}
     
-    $mydbh = 1;
-  }
+		$mydbh = 1;
+	}
   
-  # load the parameters to the object
-  my %PARAMS = %DEFAULT_PARAMS;
-  my $sth = $dbh->prepare("select * from $TABLE");
-  $sth->{'PrintError'} = 0;
-  $sth->{'RaiseError'} = 0;
-  $sth->execute or do {
-    if (not grep { $TABLE eq $_ }
-	DBIx::FullTextSearch->list_fts_indexes($dbh)) {
-      $errstr = "FullTextSearch index $TABLE doesn't exist.";
-    } else { $errstr = $sth->errstr; }
-    return;
-  };
-  while (my ($param, $value) = $sth->fetchrow_array) {
-    $PARAMS{$param} = $value;
-  }
+	# load the parameters to the object
+	my %PARAMS = %DEFAULT_PARAMS;
+	my $sth = $dbh->prepare("select * from $TABLE");
+	$sth->{'PrintError'} = 0;
+	$sth->{'RaiseError'} = 0;
+	$sth->execute or do {
+		if (not grep { $TABLE eq $_ }
+			DBIx::FullTextSearch->list_fts_indexes($dbh)) {
+			$errstr = "FullTextSearch index $TABLE doesn't exist.";
+		} else {
+			$errstr = $sth->errstr;
+		}
+		return;
+	};
+	while (my ($param, $value) = $sth->fetchrow_array) {
+		$PARAMS{$param} = $value;
+	}
   
-  my $self = bless {
+	my $self = bless {
 		    'dbh' => $dbh,
 		    'table' => $TABLE,
 		    %PARAMS,
 		   }, $class;
-  my $data_table = $self->{'data_table'};
+	my $data_table = $self->{'data_table'};
   
-  # we should disconnect if we've opened the dbh here
-  if ($mydbh) { $self->{'disconnect_on_destroy'} = 1; }
+	# we should disconnect if we've opened the dbh here
+	if ($mydbh) { $self->{'disconnect_on_destroy'} = 1; }
   
-  # some basic sanity check
-  defined $dbh->selectrow_array("select count(*) from $data_table")
-    or do { $errstr = "Table $data_table not found in the database\n"; return; };
+	# some basic sanity check
+	if (not defined $dbh->selectrow_array("select count(*) from $data_table")) {
+		$errstr = "Table $data_table not found in the database\n";
+		return;
+	}
   
   
-  # load and set the application frontend
-  my $front_module = $frontend_types{$PARAMS{'frontend'}};
-  if (defined $front_module) {
-    if ($front_module ne $class) {
-      eval "use $front_module";
-      die $@ if $@;
-    }
-    bless $self, $front_module;
-    $self->_open_tables;
-  } else { $errstr = "Specified frontend type `$PARAMS{'frontend'}' is unknown\n"; return; }
+	# load and set the application frontend
+	my $front_module = $frontend_types{$PARAMS{'frontend'}};
+	if (defined $front_module) {
+		if ($front_module ne $class) {
+			eval "use $front_module";
+			die $@ if $@;
+		}
+		bless $self, $front_module;
+		$self->_open_tables;
+	}
+	else {
+		$errstr = "Specified frontend type `$PARAMS{'frontend'}' is unknown\n"; return;
+	}
   
-  # load and set the backend (actual database access) module
-  my $back_module = $backend_types{$PARAMS{'backend'}};
-  if (defined $back_module) {
-    eval "use $back_module";
-    die $@ if $@;
-    $self->{'db_backend'} = $back_module->open($self);
-  } else { $errstr = "Specified backend type `$PARAMS{'backend'}' is unknown\n"; return; }
+	# load and set the backend (actual database access) module
+	my $back_module = $backend_types{$PARAMS{'backend'}};
+	if (defined $back_module) {
+		eval "use $back_module";
+		die $@ if $@;
+		$self->{'db_backend'} = $back_module->open($self);
+	}
+	else {
+		$errstr = "Specified backend type `$PARAMS{'backend'}' is unknown\n"; return;
+	}
   
-  # load DBIx::FullTextSearch::StopList object (if specified)
-  if($PARAMS{'stoplist'}){
-    eval "use DBIx::FullTextSearch::StopList";
-    die $@ if $@;
-    $self->{'stoplist'} = DBIx::FullTextSearch::StopList->open($dbh, $PARAMS{'stoplist'});
-  }
+	# load DBIx::FullTextSearch::StopList object (if specified)
+	if ($PARAMS{'stoplist'}) {
+		eval "use DBIx::FullTextSearch::StopList";
+		die $@ if $@;
+		$self->{'stoplist'} = DBIx::FullTextSearch::StopList->open($dbh, $PARAMS{'stoplist'});
+	}
   
-  # load Lingua::Stem object (if specified)
-  if($PARAMS{'stemmer'}){
-    eval "use Lingua::Stem";
-    die $@ if $@;
-    $self->{'stemmer'} = Lingua::Stem->new(-locale => $PARAMS{'stemmer'});
-  }
+	# load Lingua::Stem object (if specified)
+	if($PARAMS{'stemmer'}){
+		eval "use Lingua::Stem";
+		die $@ if $@;
+		$self->{'stemmer'} = Lingua::Stem->new(-locale => $PARAMS{'stemmer'});
+	}
   
-  # finally, return the object
-  $self;
+	# finally, return the object
+	$self;
 }
 
 # Create creates tables in the database according to the options, then
 # calls open to load the object to memory
 sub create {
-  my ($class, $dbh, $TABLE, %OPTIONS) = @_;
-  $errstr = undef;
-  my $mydbh = 0;
-  if (ref $dbh eq 'ARRAY') {
-    $dbh = DBI->connect(@$dbh) or
-      do { $errstr = $DBI::errstr; return; };
-    $mydbh = 1;
-  }
+	my ($class, $dbh, $TABLE, %OPTIONS) = @_;
+	$errstr = undef;
+	my $mydbh = 0;
+	if (ref $dbh eq 'ARRAY') {
+		$dbh = DBI->connect(@$dbh)
+			or do { $errstr = $DBI::errstr; return; };
+		$mydbh = 1;
+	}
   
-  my $self = bless {
-		    'dbh' => $dbh,
-		    'table' => $TABLE,
-		    %DEFAULT_PARAMS,
-		    %OPTIONS
-		   }, $class;
+	my $self = bless {
+		'dbh' => $dbh,
+		'table' => $TABLE,
+		%DEFAULT_PARAMS,
+		%OPTIONS
+		}, $class;
   
-  $self->{'data_table'} = $TABLE.'_data'
-    unless defined $self->{'data_table'};
+	$self->{'data_table'} = $TABLE.'_data'
+				unless defined $self->{'data_table'};
   
-  # convert array reference to CSV string
-  $self->{'column_name'} = join(",",@{$self->{'column_name'}}) if ref($self->{'column_name'}) eq 'ARRAY';
+	# convert array reference to CSV string
+	$self->{'column_name'} = join(",",@{$self->{'column_name'}}) if ref($self->{'column_name'}) eq 'ARRAY';
   
-  my $CREATE_PARAM = <<EOF;
+	my $CREATE_PARAM = <<EOF;
 		create table $TABLE (
 			param varchar(16) binary not null,
 			value varchar(255),
 			primary key (param)
 			)
 EOF
-  $dbh->do($CREATE_PARAM) or do { $errstr = $dbh->errstr; return; };
-  push @{$self->{'created_tables'}}, $TABLE;
+	$dbh->do($CREATE_PARAM) or do { $errstr = $dbh->errstr; return; };
+	push @{$self->{'created_tables'}}, $TABLE;
   
-  # load and set the frontend database structures
-  my $front_module = $frontend_types{$self->{'frontend'}};
-  if (defined $front_module) {
-    eval "use $front_module";
-    die $@ if $@;
-    bless $self, $front_module;
-    $errstr = $self->_create_tables;
-    if (defined $errstr) { $self->clean_failed_create; warn $errstr; return; }
-  } else { $errstr = "Specified frontend type `$self->{'frontend'}' is unknown\n"; $self->clean_failed_create; return; }
+	# load and set the frontend database structures
+	my $front_module = $frontend_types{$self->{'frontend'}};
+	if (defined $front_module) {
+		eval "use $front_module";
+		die $@ if $@;
+		bless $self, $front_module;
+		$errstr = $self->_create_tables;
+		if (defined $errstr) {
+			$self->clean_failed_create; warn $errstr; return;
+		}
+	}
+	else {
+		$errstr = "Specified frontend type `$self->{'frontend'}' is unknown\n"; $self->clean_failed_create; return;
+	}
   
-  # create the backend database structures
-  my $back_module = $backend_types{$self->{'backend'}};
-  if (defined $back_module) {
-    eval "use $back_module";
-    die $@ if $@;
-    $errstr = $back_module->_create_tables($self);
-    if (defined $errstr) { $self->clean_failed_create; warn $errstr; return; }
-  }
-  else { $errstr = "Specified backend type `$self->{'backend'}' is unknown\n"; $self->clean_failed_create; return; }
+	# create the backend database structures
+	my $back_module = $backend_types{$self->{'backend'}};
+	if (defined $back_module) {
+		eval "use $back_module";
+		die $@ if $@;
+		$errstr = $back_module->_create_tables($self);
+		if (defined $errstr) {
+			$self->clean_failed_create; warn $errstr; return;
+		}
+	}
+	else {
+		$errstr = "Specified backend type `$self->{'backend'}' is unknown\n"; $self->clean_failed_create; return;
+	}
   
-  for (grep { not ref $self->{$_} } keys %$self) {
-    $dbh->do("insert into $TABLE values (?, ?)", {}, $_, $self->{$_});
-  }
+	for (grep { not ref $self->{$_} } keys %$self) {
+		$dbh->do("insert into $TABLE values (?, ?)", {}, $_, $self->{$_});
+	}
   
-  return $class->open($dbh, $TABLE);
+	return $class->open($dbh, $TABLE);
 }
 
 sub _create_tables {}
 sub _open_tables {}
 
 sub clean_failed_create {
-  my $self = shift;
-  my $dbh = $self->{'dbh'};
-  for my $table (@{$self->{'created_tables'}}) {
-    $dbh->do("drop table $table");
-  }
+	my $self = shift;
+	my $dbh = $self->{'dbh'};
+	for my $table (@{$self->{'created_tables'}}) {
+		$dbh->do("drop table $table");
+	}
 }
 
 sub drop {
-  my $self = shift;
-  my $dbh = $self->{'dbh'};
-  for my $tag (keys %$self) {
-    next unless $tag =~ /(^|_)table$/;
-    $dbh->do("drop table $self->{$tag}");
-  }
-  1;
+	my $self = shift;
+	my $dbh = $self->{'dbh'};
+	for my $tag (keys %$self) {
+		next unless $tag =~ /(^|_)table$/;
+		$dbh->do("drop table $self->{$tag}");
+	}
+	1;
 }
 sub empty {
-  my $self = shift;
-  my $dbh = $self->{'dbh'};
-  $dbh->do("delete from $self->{'data_table'}");
-  $dbh->do("delete from $self->{'word_id_table'}");
-  return 1;
+	my $self = shift;
+	my $dbh = $self->{'dbh'};
+	$dbh->do("delete from $self->{'data_table'}");
+	$dbh->do("delete from $self->{'word_id_table'}");
+	return 1;
 }
+
 sub errstr {
-  my $self = shift;
-  ref $self ? $self->{'errstr'} : $errstr;
+	my $self = shift;
+	ref $self ? $self->{'errstr'} : $errstr;
 }
 
 sub list_fts_indexes {
-  my ($class, $dbh) = @_;
-  my %tables = map { ( $_->[0] => 1 ) }
-  @{$dbh->selectall_arrayref('show tables')};
-  my %indexes = ();
-  for my $table (keys %tables) {
-    local $dbh->{'PrintError'} = 0;
-    local $dbh->{'RaiseError'} = 0;
-    if ($dbh->selectrow_array("select param, value from $table
+	my ($class, $dbh) = @_;
+	my %tables = map { ( $_->[0] => 1 ) }
+	@{$dbh->selectall_arrayref('show tables')};
+	my %indexes = ();
+	for my $table (keys %tables) {
+		local $dbh->{'PrintError'} = 0;
+		local $dbh->{'RaiseError'} = 0;
+		if ($dbh->selectrow_array("select param, value from $table
 				where param = 'data_table'")) {
-      $indexes{$table} = 1;
-    }
-  }
-  return sort keys %indexes;
+			$indexes{$table} = 1;
+		}
+	}
+	return sort keys %indexes;
 }
 
 sub index_document {
-  my ($self, $id, $data) = @_;
-  return unless defined $id;
+	my ($self, $id, $data) = @_;
+	return unless defined $id;
+
+	my $dbh = $self->{'dbh'};
+
+	my $param_table = $self->{'table'};
+
+	my $adding_doc = 0;
+
+	my $adding = 0;
+	if (not defined $self->{'max_doc_id'} or $id > $self->{'max_doc_id'}) {
+		$self->{'max_doc_id'} = $id;
+		my $update_max_doc_id_sth =
+			( defined $self->{'update_max_doc_id_sth'}
+			? $self->{'update_max_doc_id_sth'}
+			: $self->{'update_max_doc_id_sth'} = $dbh->prepare("replace into $param_table values (?, ?)"));
+		$update_max_doc_id_sth->execute('max_doc_id', $id);
+		$adding_doc = 1;
+	}
   
-  my $dbh = $self->{'dbh'};
-  
-  my $param_table = $self->{'table'};
-  
-  my $adding_doc = 0;
-  
-  my $adding = 0;
-  if (not defined $self->{'max_doc_id'} or $id > $self->{'max_doc_id'}) {
-    $self->{'max_doc_id'} = $id;
-    my $update_max_doc_id_sth =
-      ( defined $self->{'update_max_doc_id_sth'}
-	? $self->{'update_max_doc_id_sth'}
-	: $self->{'update_max_doc_id_sth'} = $dbh->prepare("replace into $param_table values (?, ?)"));
-    $update_max_doc_id_sth->execute('max_doc_id', $id);
-    $adding_doc = 1;
-  }
-  
-  my $init_env = $self->{'init_env'};	# use packages, etc.
-  eval $init_env if defined $init_env;
-  print STDERR "Init_env failed with $@\n" if $@;
-  
-  $data = '' unless defined $data;
-  return $self->{'db_backend'}->parse_and_index_data($adding_doc,
+	my $init_env = $self->{'init_env'};	# use packages, etc.
+	eval $init_env if defined $init_env;
+	print STDERR "Init_env failed with $@\n" if $@;
+
+	$data = '' unless defined $data;
+	return $self->{'db_backend'}->parse_and_index_data($adding_doc,
 						     $id, $data);
 }
 
 # used for backends that need a count for each of the words
 sub parse_and_index_data_count {
-  my ($backend, $adding_doc, $id, $data) = @_;
-  ## note that this is run with backend object
-  my $self = $backend->{'fts'};
-  
-  my $word_length = $self->{'word_length'};
-  # this needs to get parametrized (lc, il2_to_ascii, parsing of
-  # HTML tags, ...)
-  
-  my %words;
-  
-  use locale;
-  my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
-  my $stoplist = $self->{'stoplist'};
-  my $stemmer = $self->{'stemmer'};
-  my @words = eval $filter;
-  @words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
-  @words = @{$stemmer->stem(@words)} if defined($stemmer);
-  for my $word ( @words ) {
-    $words{$word} = 0 if not defined $words{$word};
-    $words{$word}++;
-  }
-  
-  my @result;
-  if ($adding_doc) {
-    @result = $backend->add_document($id, \%words);
-  } else {
-    @result = $backend->update_document($id, \%words);
-  }
+	my ($backend, $adding_doc, $id, $data) = @_;
+	## note that this is run with backend object
+	my $self = $backend->{'fts'};
 
-  if (wantarray) {
-    return @result;
-  }
-  return $result[0];
+	my $word_length = $self->{'word_length'};
+	# this needs to get parametrized (lc, il2_to_ascii, parsing of
+	# HTML tags, ...)
+
+	my %words;
+
+	use locale;
+	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
+	my $stoplist = $self->{'stoplist'};
+	my $stemmer = $self->{'stemmer'};
+	my @words = eval $filter;
+	@words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
+	@words = @{$stemmer->stem(@words)} if defined($stemmer);
+	for my $word ( @words ) {
+		$words{$word} = 0 if not defined $words{$word};
+		$words{$word}++;
+	}
+  
+	my @result;
+	if ($adding_doc) {
+		@result = $backend->add_document($id, \%words);
+	} else {
+		@result = $backend->update_document($id, \%words);
+	}
+
+	if (wantarray) {
+		return @result;
+	}
+	return $result[0];
 }
 
 # used for backends where list of occurencies is needed
 sub parse_and_index_data_list {
-  my ($backend, $adding_doc, $id, $data) = @_;
-  ## note that this is run with backend object
-  my $self = $backend->{'fts'};
+	my ($backend, $adding_doc, $id, $data) = @_;
+	## note that this is run with backend object
+	my $self = $backend->{'fts'};
+
+	my $word_length = $self->{'word_length'};
+	# this needs to get parametrized (lc, il2_to_ascii, parsing of
+	# HTML tags, ...)
+
+	my %words;
+
+	use locale;
+	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
+
+	my $i = 0;
+	my $stoplist = $self->{'stoplist'};
+	my $stemmer = $self->{'stemmer'};
+	my @words = eval $filter;
+	@words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
+	@words = @{$stemmer->stem(@words)} if defined($stemmer);
+	for my $word ( @words ) {
+		push @{$words{$word}}, ++$i;
+	} 
   
-  my $word_length = $self->{'word_length'};
-  # this needs to get parametrized (lc, il2_to_ascii, parsing of
-  # HTML tags, ...)
+	my @result;
+	if ($adding_doc) {
+		@result = $backend->add_document($id, \%words);
+	} else {
+		@result = $backend->update_document($id, \%words);
+	}
   
-  my %words;
-  
-  use locale;
-  my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
-  
-  my $i = 0;
-  my $stoplist = $self->{'stoplist'};
-  my $stemmer = $self->{'stemmer'};
-  my @words = eval $filter;
-  @words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
-  @words = @{$stemmer->stem(@words)} if defined($stemmer);
-  for my $word ( @words ) {
-    push @{$words{$word}}, ++$i;
-  } 
-  
-  my @result;
-  if ($adding_doc) {
-    @result = $backend->add_document($id, \%words);
-  } else {
-    @result = $backend->update_document($id, \%words);
-  }
-  
-  if (wantarray) {
-    return @result;
-  }
-  return $result[0];
+	if (wantarray) {
+		return @result;
+	}
+	return $result[0];
 }
+
 sub delete_document {
-  my $self = shift;
-  $self->{'db_backend'}->delete_document(@_);
+	my $self = shift;
+	$self->{'db_backend'}->delete_document(@_);
 }
 
 sub contains_hashref {
-  my $self = shift;
-  my $word_length = $self->{'word_length'};
-  my $stemmer = $self->{'stemmer'};
-  my $filter = $self->{'filter'};
-  my $stoplist = $self->{'stoplist'};
-  my @phrases;
-  for (@_){
-    my $phrase;
-    my $splitter = ' map { ' . $self->{'search_splitter'} . ' } $_';
-    my @words = eval $splitter;
-    @words = eval $filter.' @words';
-    @words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
-    if (defined($stemmer)){
-      my @stemmed_words = ();
-      for (@words){
-	if (m/\*$/){
-	  # wildcard search, make work with stemming
-	  my $stem_word = $stemmer->stem($_);
-	  for (@$stem_word){
-	    $_ .= "*";
-	    push @stemmed_words, $_;
-	  }
-	} else {
-	  push @stemmed_words, @{$stemmer->stem($_)};
+	my $self = shift;
+	my $word_length = $self->{'word_length'};
+	my $stemmer = $self->{'stemmer'};
+	my $filter = $self->{'filter'};
+	my $stoplist = $self->{'stoplist'};
+	my @phrases;
+	for (@_){
+		my $phrase;
+		my $splitter = ' map { ' . $self->{'search_splitter'} . ' } $_';
+		my @words = eval $splitter;
+		@words = eval $filter.' @words';
+		@words = grep !$stoplist->is_stop_word($_), @words if defined($stoplist);
+		if (defined($stemmer)){
+			my @stemmed_words = ();
+			for (@words){
+				if (m/\*$/){
+					# wildcard search, make work with stemming
+					my $stem_word = $stemmer->stem($_);
+					for (@$stem_word){
+						$_ .= "*";
+						push @stemmed_words, $_;
+					}
+				} else {
+					push @stemmed_words, @{$stemmer->stem($_)};
+				}
+			}
+			$phrase = join(' ',@stemmed_words);
+		} else {
+			$phrase = join(' ',@words);
+		}
+		# change wildcard to SQL version (* -> %)
+		$phrase =~ s/\*/%/g;
+		push @phrases, $phrase;
 	}
-      }
-      $phrase = join(' ',@stemmed_words);
-    } else {
-      $phrase = join(' ',@words);
-    }
-    # change wildcard to SQL version (* -> %)
-    $phrase =~ s/\*/%/g;
-    push @phrases, $phrase;
-  }
-  $self->{'db_backend'}->contains_hashref(@phrases);
+	$self->{'db_backend'}->contains_hashref(@phrases);
 }
 
 sub contains {
-  my $self = shift;
-  my $res = $self->contains_hashref(@_);
-  if (not $self->{'count_bits'}) { return keys %$res; }
-  return sort { $res->{$b} <=> $res->{$a} } keys %$res;
+	my $self = shift;
+	my $res = $self->contains_hashref(@_);
+	if (not $self->{'count_bits'}) { return keys %$res; }
+	return sort { $res->{$b} <=> $res->{$a} } keys %$res;
 }
+
 sub econtains_hashref {
-  my $self = shift;
-  my $docs = {};
-  my $word_num = 0;
+	my $self = shift;
+	my $docs = {};
+	my $word_num = 0;
   
-  my $stoplist = $self->{'stoplist'};
+	my $stoplist = $self->{'stoplist'};
   
-  my @plus_words = map { /^\+(.+)$/s } @_;
-  @plus_words = grep !$stoplist->is_stop_word($_), @plus_words if defined($stoplist);
+	my @plus_words = map { /^\+(.+)$/s } @_;
+	@plus_words = grep !$stoplist->is_stop_word($_), @plus_words if defined($stoplist);
   
-  # required words
-  for my $word (@plus_words) {
-    $word_num++;
-    my $oneword = $self->contains_hashref($word);
-    if ($word_num == 1) { $docs = $oneword; next; }
-    for my $doc (keys %$oneword) {
-      $docs->{$doc} += $oneword->{$doc} if defined $docs->{$doc};
-    }
-    for my $doc (keys %$docs) {
-      delete $docs->{$doc} unless defined $oneword->{$doc};
-    }
-  }
+	# required words
+	for my $word (@plus_words) {
+		$word_num++;
+		my $oneword = $self->contains_hashref($word);
+		if ($word_num == 1) { $docs = $oneword; next; }
+		for my $doc (keys %$oneword) {
+			$docs->{$doc} += $oneword->{$doc} if defined $docs->{$doc};
+		}
+		for my $doc (keys %$docs) {
+			delete $docs->{$doc} unless defined $oneword->{$doc};
+		}
+	}
   
-  # optional words
-  for my $word ( map { /^([^+-].*)$/s } @_) {
-    my $oneword = $self->contains_hashref($word);
-    for my $doc (keys %$oneword) {
-      if (@plus_words) {
-	$docs->{$doc} += $oneword->{$doc} if defined $docs->{$doc};
-      }
-      else {
-	$docs->{$doc} = 0 unless defined $docs->{$doc};
-	$docs->{$doc} += $oneword->{$doc};
-      }
-    }
-  }
+	# optional words
+	for my $word ( map { /^([^+-].*)$/s } @_) {
+		my $oneword = $self->contains_hashref($word);
+		for my $doc (keys %$oneword) {
+			if (@plus_words) {
+				$docs->{$doc} += $oneword->{$doc} if defined $docs->{$doc};
+			}
+			else {
+				$docs->{$doc} = 0 unless defined $docs->{$doc};
+				$docs->{$doc} += $oneword->{$doc};
+			}
+		}
+	}
   
-  # prohibited words
-  for my $word ( map { /^-(.+)$/s } @_) {
-    my $oneword = $self->contains_hashref($word);
-    for my $doc (keys %$oneword) {
-      delete $docs->{$doc};
-    }
-  }
-  $docs;
+	# prohibited words
+	for my $word ( map { /^-(.+)$/s } @_) {
+		my $oneword = $self->contains_hashref($word);
+		for my $doc (keys %$oneword) {
+			delete $docs->{$doc};
+		}
+	}
+	$docs;
 }
+
 sub econtains {
-  my $self = shift;
-  my $res = $self->econtains_hashref(@_);
-  if (not $self->{'count_bits'}) { return keys %$res; }
-  return sort { $res->{$b} <=> $res->{$a} } keys %$res;
+	my $self = shift;
+	my $res = $self->econtains_hashref(@_);
+	if (not $self->{'count_bits'}) { return keys %$res; }
+	return sort { $res->{$b} <=> $res->{$a} } keys %$res;
 }
 
 sub search {
-  my ($self, $query) = @_;
+	my ($self, $query) = @_;
   
-  if($self->{'backend'} eq 'phrase'){
-    # phrase backend, must deal with quotes
+	if ($self->{'backend'} eq 'phrase') {
+		# phrase backend, must deal with quotes
 
-    # handle + and - operations on phrases
-    $query =~ s/([\+\-])"/"$1/g;
-    
-    my $inQuote = 0;
-    my @phrases = ();
-    
-    my @blocks = split(/\"/, $query);
-    
-    # deal with quotes
-    for (@blocks){
-      if($inQuote == 0){
-	# we are outside quotes, search for individual words
-	push @phrases, split(' ');
-      } else {
-	# we are inside quote, search for whole phrase
-	push @phrases, $_;
-      }
-      $inQuote = ++$inQuote % 2;
-    }
-    return $self->econtains(@phrases);
-  } else {
-    # not phrase backend, don't deal with quotes
-    my @words = split(' ', $query);
-    return $self->econtains(@words);
-  }
+		# handle + and - operations on phrases
+		$query =~ s/([\+\-])"/"$1/g;
+
+		my $inQuote = 0;
+		my @phrases = ();
+
+		my @blocks = split(/\"/, $query);
+
+		# deal with quotes
+		for (@blocks){
+			if($inQuote == 0){
+				# we are outside quotes, search for individual words
+				push @phrases, split(' ');
+			} else {
+				# we are inside quote, search for whole phrase
+				push @phrases, $_;
+			}
+			$inQuote = ++$inQuote % 2;
+		}
+		return $self->econtains(@phrases);
+	} else
+		{
+		# not phrase backend, don't deal with quotes
+		my @words = split(' ', $query);
+		return $self->econtains(@words);
+	}
 }
 
 sub document_count {
-  my $self = shift;
-  my $dbh = $self->{'dbh'};
+	my $self = shift;
+	my $dbh = $self->{'dbh'};
 
-  my $SQL = qq{
-    select distinct doc_id
-    from $self->{'data_table'}
-  };
-  my $ary_ref = $dbh->selectall_arrayref($SQL);
-  return scalar @$ary_ref;
+	my $SQL = qq{
+		select distinct doc_id from $self->{'data_table'}
+	};
+	my $ary_ref = $dbh->selectall_arrayref($SQL);
+	return scalar @$ary_ref;
 }
 
 # find all words that are contained in at least $k % of all documents
 sub common_word {
-  my $self = shift;
-  my $k = shift || 80;
-  $self->{'db_backend'}->common_word($k);
+	my $self = shift;
+	my $k = shift || 80;
+	$self->{'db_backend'}->common_word($k);
 }
 
 
@@ -997,7 +1022,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.53.
+This documentation describes DBIx::FullTextSearch module version 0.54.
 
 =head1 BUGS
 

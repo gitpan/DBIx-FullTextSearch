@@ -95,6 +95,7 @@ sub drop {
 DROP table $table
 };
   $dbh->do($SQL) or croak "Can't drop table $table: " . $dbh->errstr;
+  $self->{'stoplist'} = {};
 }
 
 sub empty {
@@ -105,6 +106,7 @@ sub empty {
 DELETE FROM $table
 };
   $dbh->do($SQL) or croak "Can't empty table $table: " . $dbh->errstr;
+  $self->{'stoplist'} = {};
 }
 
 sub add_stop_word {
@@ -120,7 +122,6 @@ INSERT INTO $self->{'table'} (word) VALUES (?)
   my $sth = $dbh->prepare($SQL);
 
   for my $word (@$words){
-    print "$word\n";
     next if $self->is_stop_word($word);
     $sth->execute($word);
     $self->{'stoplist'}->{lc($word)} = 1;
@@ -258,7 +259,7 @@ Removes table associated with the StopList object.
 =head1 AUTHOR
 
 Thomas J. Mather, tjmather@alumni.princeton.edu,
-http://www.thoughtstore.com/~tjmather/ New York, NY, USA
+http://www.thoughtstore.com/tjmather/perl/ New York, NY, USA
 
 =head1 COPYRIGHT
 

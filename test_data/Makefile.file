@@ -1,29 +1,29 @@
-# This Makefile is for the DBIx::FullTextSearch extension to perl.
+# This Makefile is for the XBase extension to perl.
 #
 # It was generated automatically by MakeMaker version
-# 5.45 (Revision: 1.222) from the contents of
+# 5.4301 (Revision: 1.222) from the contents of
 # Makefile.PL. Don't edit this file, edit Makefile.PL instead.
 #
 #	ANY CHANGES MADE HERE WILL BE LOST!
 #
-#   MakeMaker ARGV: ()
-#
 #   MakeMaker Parameters:
 
-#	MAN1PODS => { ftsadmin=>q[$(INST_MAN1DIR)/ftsadmin.1] }
-#	NAME => q[DBIx::FullTextSearch]
-#	PM => { Column.pm=>q[$(INST_LIBDIR)/FullTextSearch/Column.pm], Table.pm=>q[$(INST_LIBDIR)/FullTextSearch/Table.pm], Phrase.pm=>q[$(INST_LIBDIR)/FullTextSearch/Phrase.pm], testconfig/DBIx/FullTextSearch/TestConfig.pm=>q[$(INST_LIBDIR)/FullTextSearch/TestConfig.pm], StopList.pm=>q[$(INST_LIBDIR)/FullTextSearch/StopList.pm], FullTextSearch.pm=>q[$(INST_LIBDIR)/FullTextSearch.pm], File.pm=>q[$(INST_LIBDIR)/FullTextSearch/File.pm], Blob.pm=>q[$(INST_LIBDIR)/FullTextSearch/Blob.pm], String.pm=>q[$(INST_LIBDIR)/FullTextSearch/String.pm], URL.pm=>q[$(INST_LIBDIR)/FullTextSearch/URL.pm] }
-#	VERSION_FROM => q[FullTextSearch.pm]
-#	depend => { bench=>q[pure_all 		for i in $(BENCH_FILES) ; do echo $$i ; $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) $$i ; done 		] }
-#	dist => { POSTOP=>q[mv $(DISTNAME)-$(VERSION).tar.gz ../], COMPRESS=>q[gzip -9f], SUFFIX=>q[gz] }
-#	macro => { BENCH_FILES=>q[bench/*.t] }
+#	ABSTRACT => q[Reads and writes XBase (dbf) files, includes DBI support]
+#	AUTHOR => q[Jan Pazdziora (adelton@fi.muni.cz)]
+#	DISTNAME => q[DBD-XBase]
+#	EXE_FILES => [q[bin/dbfdump]]
+#	NAME => q[XBase]
+#	PL_FILES => { bin/dbfdump.PL=>q[bin/dbfdump] }
+#	VERSION_FROM => q[lib/XBase.pm]
+#	clean => { FILES=>q[bin/dbfdump t/newtable.dbf t/newtable.dbt t/write.dbf t/write.dbt] }
+#	dist => { COMPRESS=>q[gzip -9f], POSTOP=>q[mv $(DISTNAME)-$(VERSION).tar.gz ../], SUFFIX=>q[gz] }
 
 # --- MakeMaker post_initialize section:
 
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/lib/perl5/5.6.0/i686-linux/Config.pm)
+# These definitions are from config.sh (via /packages/run/perl-5.005_02/lib/5.00502/i586-linux/Config.pm)
 
 # They may have been overridden via Makefile.PL or on the command line
 AR = ar
@@ -35,70 +35,66 @@ DLSRC = dl_dlopen.xs
 LD = cc
 LDDLFLAGS = -shared -L/usr/local/lib
 LDFLAGS =  -L/usr/local/lib
-LIBC = /lib/libc-2.1.2.so
+LIBC = /lib/libc.so.6
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
-OSVERS = 2.2.12-20
+OSVERS = 2.0.33
 RANLIB = :
 SO = so
 EXE_EXT = 
-FULL_AR = /usr/bin/ar
 
 
 # --- MakeMaker constants section:
 AR_STATIC_ARGS = cr
-NAME = DBIx::FullTextSearch
-DISTNAME = DBIx-FullTextSearch
-NAME_SYM = DBIx_FullTextSearch
-VERSION = 0.53
-VERSION_SYM = 0_53
-XS_VERSION = 0.53
+NAME = XBase
+DISTNAME = DBD-XBase
+NAME_SYM = XBase
+VERSION = 0.130
+VERSION_SYM = 0_130
+XS_VERSION = 0.130
 INST_BIN = blib/bin
 INST_EXE = blib/script
 INST_LIB = blib/lib
 INST_ARCHLIB = blib/arch
 INST_SCRIPT = blib/script
-PREFIX = /usr
+PREFIX = /packages/run/perl-5.005_02
 INSTALLDIRS = site
-INSTALLPRIVLIB = $(PREFIX)/lib/perl5/5.6.0
-INSTALLARCHLIB = $(PREFIX)/lib/perl5/5.6.0/i686-linux
-INSTALLSITELIB = $(PREFIX)/lib/perl5/site_perl/5.6.0
-INSTALLSITEARCH = $(PREFIX)/lib/perl5/site_perl/5.6.0/i686-linux
+INSTALLPRIVLIB = $(PREFIX)/lib/5.00502
+INSTALLARCHLIB = $(PREFIX)/lib/5.00502/i586-linux
+INSTALLSITELIB = $(PREFIX)/lib/site_perl/5.005
+INSTALLSITEARCH = $(PREFIX)/lib/site_perl/5.005/i586-linux
 INSTALLBIN = $(PREFIX)/bin
 INSTALLSCRIPT = $(PREFIX)/bin
-PERL_LIB = /usr/lib/perl5/5.6.0
-PERL_ARCHLIB = /usr/lib/perl5/5.6.0/i686-linux
-SITELIBEXP = /usr/lib/perl5/site_perl/5.6.0
-SITEARCHEXP = /usr/lib/perl5/site_perl/5.6.0/i686-linux
+PERL_LIB = /packages/run/perl-5.005_02/lib/5.00502
+PERL_ARCHLIB = /packages/run/perl-5.005_02/lib/5.00502/i586-linux
+SITELIBEXP = /packages/run/perl-5.005_02/lib/site_perl/5.005
+SITEARCHEXP = /packages/run/perl-5.005_02/lib/site_perl/5.005/i586-linux
 LIBPERL_A = libperl.a
 FIRST_MAKEFILE = Makefile
 MAKE_APERL_FILE = Makefile.aperl
 PERLMAINCC = $(CC)
-PERL_INC = /usr/lib/perl5/5.6.0/i686-linux/CORE
+PERL_INC = /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE
 PERL = /usr/bin/perl
 FULLPERL = /usr/bin/perl
-FULL_AR = /usr/bin/ar
 
 VERSION_MACRO = VERSION
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
-PERL_MALLOC_DEF = -DPERL_EXTMALLOC_DEF -Dmalloc=Perl_malloc -Dfree=Perl_mfree -Drealloc=Perl_realloc -Dcalloc=Perl_calloc
 
-MAKEMAKER = /usr/lib/perl5/5.6.0/ExtUtils/MakeMaker.pm
-MM_VERSION = 5.45
+MAKEMAKER = /packages/run/perl-5.005_02/lib/5.00502/ExtUtils/MakeMaker.pm
+MM_VERSION = 5.4301
 
 # FULLEXT = Pathname for extension directory (eg Foo/Bar/Oracle).
 # BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT. (eg Oracle)
 # ROOTEXT = Directory part of FULLEXT with leading slash (eg /DBD)  !!! Deprecated from MM 5.32  !!!
 # PARENT_NAME = NAME without BASEEXT and no trailing :: (eg Foo::Bar)
 # DLBASE  = Basename part of dynamic library. May be just equal BASEEXT.
-FULLEXT = DBIx/FullTextSearch
-BASEEXT = FullTextSearch
-PARENT_NAME = DBIx
+FULLEXT = XBase
+BASEEXT = XBase
 DLBASE = $(BASEEXT)
-VERSION_FROM = FullTextSearch.pm
+VERSION_FROM = lib/XBase.pm
 OBJECT = 
 LDFROM = $(OBJECT)
 LINKTYPE = dynamic
@@ -108,17 +104,17 @@ XS_FILES=
 C_FILES = 
 O_FILES = 
 H_FILES = 
-HTMLLIBPODS    = 
-HTMLSCRIPTPODS = 
-MAN1PODS = ftsadmin
-MAN3PODS = FullTextSearch.pm \
-	StopList.pm
-HTMLEXT = html
+MAN1PODS = bin/dbfdump
+MAN3PODS = lib/DBD/XBase.pm \
+	lib/XBase.pm \
+	lib/XBase/Base.pm \
+	lib/XBase/Index.pm \
+	lib/XBase/Memo.pm
 INST_MAN1DIR = blib/man1
-INSTALLMAN1DIR = /usr/man/man1
+INSTALLMAN1DIR = $(PREFIX)/man/man1
 MAN1EXT = 1
 INST_MAN3DIR = blib/man3
-INSTALLMAN3DIR = /usr/man/man3
+INSTALLMAN3DIR = $(PREFIX)/man/man3
 MAN3EXT = 3
 PERM_RW = 644
 PERM_RWX = 755
@@ -140,8 +136,8 @@ makemakerdflt: all
 CONFIGDEP = $(PERL_ARCHLIB)/Config.pm $(PERL_INC)/config.h
 
 # Where to put things:
-INST_LIBDIR      = $(INST_LIB)/DBIx
-INST_ARCHLIBDIR  = $(INST_ARCHLIB)/DBIx
+INST_LIBDIR      = $(INST_LIB)
+INST_ARCHLIBDIR  = $(INST_ARCHLIB)
 
 INST_AUTODIR     = $(INST_LIB)/auto/$(FULLEXT)
 INST_ARCHAUTODIR = $(INST_ARCHLIB)/auto/$(FULLEXT)
@@ -154,37 +150,28 @@ EXPORT_LIST =
 
 PERL_ARCHIVE = 
 
-TO_INST_PM = Blob.pm \
-	Column.pm \
-	File.pm \
-	FullTextSearch.pm \
-	Phrase.pm \
-	StopList.pm \
-	String.pm \
-	Table.pm \
-	URL.pm \
-	testconfig/DBIx/FullTextSearch/TestConfig.pm
+TO_INST_PM = lib/DBD/XBase.pm \
+	lib/XBase.pm \
+	lib/XBase/Base.pm \
+	lib/XBase/Index.pm \
+	lib/XBase/Memo.pm \
+	lib/XBase/SQL.pm \
+	lib/XBase/cdx.pm
 
-PM_TO_BLIB = Column.pm \
-	$(INST_LIBDIR)/FullTextSearch/Column.pm \
-	Table.pm \
-	$(INST_LIBDIR)/FullTextSearch/Table.pm \
-	Phrase.pm \
-	$(INST_LIBDIR)/FullTextSearch/Phrase.pm \
-	testconfig/DBIx/FullTextSearch/TestConfig.pm \
-	$(INST_LIBDIR)/FullTextSearch/TestConfig.pm \
-	StopList.pm \
-	$(INST_LIBDIR)/FullTextSearch/StopList.pm \
-	FullTextSearch.pm \
-	$(INST_LIBDIR)/FullTextSearch.pm \
-	File.pm \
-	$(INST_LIBDIR)/FullTextSearch/File.pm \
-	Blob.pm \
-	$(INST_LIBDIR)/FullTextSearch/Blob.pm \
-	String.pm \
-	$(INST_LIBDIR)/FullTextSearch/String.pm \
-	URL.pm \
-	$(INST_LIBDIR)/FullTextSearch/URL.pm
+PM_TO_BLIB = lib/XBase/Memo.pm \
+	$(INST_LIB)/XBase/Memo.pm \
+	lib/XBase/cdx.pm \
+	$(INST_LIB)/XBase/cdx.pm \
+	lib/XBase/Index.pm \
+	$(INST_LIB)/XBase/Index.pm \
+	lib/XBase/SQL.pm \
+	$(INST_LIB)/XBase/SQL.pm \
+	lib/XBase.pm \
+	$(INST_LIB)/XBase.pm \
+	lib/DBD/XBase.pm \
+	$(INST_LIB)/DBD/XBase.pm \
+	lib/XBase/Base.pm \
+	$(INST_LIB)/XBase/Base.pm
 
 
 # --- MakeMaker tool_autosplit section:
@@ -266,13 +253,9 @@ DIST_DEFAULT = tardist
 
 
 # --- MakeMaker macro section:
-BENCH_FILES = bench/*.t
 
 
 # --- MakeMaker depend section:
-bench: pure_all
-		for i in $(BENCH_FILES) ; do echo $$i ; $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) $$i ; done
-		
 
 
 # --- MakeMaker cflags section:
@@ -309,7 +292,7 @@ PASTHRU = LIB="$(LIB)"\
 
 #all ::	config $(INST_PM) subdirs linkext manifypods
 
-all :: pure_all htmlifypods manifypods
+all :: pure_all manifypods
 	@$(NOOP)
 
 pure_all :: config pm_to_blib subdirs linkext
@@ -327,21 +310,25 @@ config :: $(INST_ARCHAUTODIR)/.exists
 config :: $(INST_AUTODIR)/.exists
 	@$(NOOP)
 
-$(INST_AUTODIR)/.exists :: /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h
+config :: Version_check
+	@$(NOOP)
+
+
+$(INST_AUTODIR)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
 	@$(MKPATH) $(INST_AUTODIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h $(INST_AUTODIR)/.exists
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_AUTODIR)/.exists
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_AUTODIR)
 
-$(INST_LIBDIR)/.exists :: /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h
+$(INST_LIBDIR)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
 	@$(MKPATH) $(INST_LIBDIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h $(INST_LIBDIR)/.exists
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_LIBDIR)/.exists
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_LIBDIR)
 
-$(INST_ARCHAUTODIR)/.exists :: /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h
+$(INST_ARCHAUTODIR)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
 	@$(MKPATH) $(INST_ARCHAUTODIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h $(INST_ARCHAUTODIR)/.exists
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_ARCHAUTODIR)/.exists
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_ARCHAUTODIR)
 
@@ -349,9 +336,9 @@ config :: $(INST_MAN1DIR)/.exists
 	@$(NOOP)
 
 
-$(INST_MAN1DIR)/.exists :: /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h
+$(INST_MAN1DIR)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
 	@$(MKPATH) $(INST_MAN1DIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h $(INST_MAN1DIR)/.exists
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_MAN1DIR)/.exists
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_MAN1DIR)
 
@@ -359,9 +346,9 @@ config :: $(INST_MAN3DIR)/.exists
 	@$(NOOP)
 
 
-$(INST_MAN3DIR)/.exists :: /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h
+$(INST_MAN3DIR)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
 	@$(MKPATH) $(INST_MAN3DIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.6.0/i686-linux/CORE/perl.h $(INST_MAN3DIR)/.exists
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_MAN3DIR)/.exists
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_MAN3DIR)
 
@@ -412,35 +399,67 @@ static :: Makefile $(INST_STATIC)
 # --- MakeMaker static_lib section:
 
 
-# --- MakeMaker htmlifypods section:
-
-htmlifypods : pure_all
-	@$(NOOP)
-
-
 # --- MakeMaker manifypods section:
-POD2MAN_EXE = /usr/bin/pod2man
+POD2MAN_EXE = /packages/run/perl-5.005_02/bin/pod2man
 POD2MAN = $(PERL) -we '%m=@ARGV;for (keys %m){' \
 -e 'next if -e $$m{$$_} && -M $$m{$$_} < -M $$_ && -M $$m{$$_} < -M "Makefile";' \
 -e 'print "Manifying $$m{$$_}\n";' \
 -e 'system(qq[$$^X ].q["-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" $(POD2MAN_EXE) ].qq[$$_>$$m{$$_}])==0 or warn "Couldn\047t install $$m{$$_}\n";' \
 -e 'chmod(oct($(PERM_RW))), $$m{$$_} or warn "chmod $(PERM_RW) $$m{$$_}: $$!\n";}'
 
-manifypods : pure_all ftsadmin \
-	StopList.pm \
-	FullTextSearch.pm
+manifypods : pure_all bin/dbfdump \
+	lib/XBase/Memo.pm \
+	lib/XBase/Index.pm \
+	lib/XBase.pm \
+	lib/DBD/XBase.pm \
+	lib/XBase/Base.pm
 	@$(POD2MAN) \
-	ftsadmin \
-	$(INST_MAN1DIR)/ftsadmin.1 \
-	StopList.pm \
-	$(INST_MAN3DIR)/DBIx::StopList.$(MAN3EXT) \
-	FullTextSearch.pm \
-	$(INST_MAN3DIR)/DBIx::FullTextSearch.$(MAN3EXT)
+	bin/dbfdump \
+	$(INST_MAN1DIR)/dbfdump.$(MAN1EXT) \
+	lib/XBase/Memo.pm \
+	$(INST_MAN3DIR)/XBase::Memo.$(MAN3EXT) \
+	lib/XBase/Index.pm \
+	$(INST_MAN3DIR)/XBase::Index.$(MAN3EXT) \
+	lib/XBase.pm \
+	$(INST_MAN3DIR)/XBase.$(MAN3EXT) \
+	lib/DBD/XBase.pm \
+	$(INST_MAN3DIR)/DBD::XBase.$(MAN3EXT) \
+	lib/XBase/Base.pm \
+	$(INST_MAN3DIR)/XBase::Base.$(MAN3EXT)
 
 # --- MakeMaker processPL section:
 
+all :: bin/dbfdump
+	@$(NOOP)
+
+bin/dbfdump :: bin/dbfdump.PL
+	$(PERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) bin/dbfdump.PL
+
 
 # --- MakeMaker installbin section:
+
+$(INST_SCRIPT)/.exists :: /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h
+	@$(MKPATH) $(INST_SCRIPT)
+	@$(EQUALIZE_TIMESTAMP) /packages/run/perl-5.005_02/lib/5.00502/i586-linux/CORE/perl.h $(INST_SCRIPT)/.exists
+
+	-@$(CHMOD) $(PERM_RWX) $(INST_SCRIPT)
+
+EXE_FILES = bin/dbfdump
+
+FIXIN = $(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -MExtUtils::MakeMaker \
+    -e "MY->fixin(shift)"
+
+all :: $(INST_SCRIPT)/dbfdump
+	@$(NOOP)
+
+realclean ::
+	rm -f $(INST_SCRIPT)/dbfdump
+
+$(INST_SCRIPT)/dbfdump: bin/dbfdump Makefile $(INST_SCRIPT)/.exists
+	@rm -f $(INST_SCRIPT)/dbfdump
+	cp bin/dbfdump $(INST_SCRIPT)/dbfdump
+	$(FIXIN) $(INST_SCRIPT)/dbfdump
+	-@$(CHMOD) $(PERM_RWX) $(INST_SCRIPT)/dbfdump
 
 
 # --- MakeMaker subdirs section:
@@ -453,7 +472,7 @@ manifypods : pure_all ftsadmin \
 # the Makefile here so a later make realclean still has a makefile to use.
 
 clean ::
-	-rm -rf ./blib $(MAKE_APERL_FILE) $(INST_ARCHAUTODIR)/extralibs.all perlmain.c mon.out core core.*perl.*.? *perl.core so_locations pm_to_blib *~ */*~ */*/*~ *$(OBJ_EXT) *$(LIB_EXT) perl.exe $(BOOTSTRAP) $(BASEEXT).bso $(BASEEXT).def $(BASEEXT).exp
+	-rm -rf bin/dbfdump t/newtable.dbf t/newtable.dbt t/write.dbf t/write.dbt ./blib $(MAKE_APERL_FILE) $(INST_ARCHAUTODIR)/extralibs.all perlmain.c mon.out core so_locations pm_to_blib *~ */*~ */*/*~ *$(OBJ_EXT) *$(LIB_EXT) perl.exe $(BOOTSTRAP) $(BASEEXT).bso $(BASEEXT).def $(BASEEXT).exp
 	-mv Makefile Makefile.old $(DEV_NULL)
 
 
@@ -462,7 +481,7 @@ clean ::
 # Delete temporary files (via clean) and also delete installed files
 realclean purge ::  clean
 	rm -rf $(INST_AUTODIR) $(INST_ARCHAUTODIR)
-	rm -f $(INST_LIBDIR)/FullTextSearch/Column.pm $(INST_LIBDIR)/FullTextSearch/Table.pm $(INST_LIBDIR)/FullTextSearch/Phrase.pm $(INST_LIBDIR)/FullTextSearch/TestConfig.pm $(INST_LIBDIR)/FullTextSearch/StopList.pm $(INST_LIBDIR)/FullTextSearch.pm $(INST_LIBDIR)/FullTextSearch/File.pm $(INST_LIBDIR)/FullTextSearch/Blob.pm $(INST_LIBDIR)/FullTextSearch/String.pm $(INST_LIBDIR)/FullTextSearch/URL.pm
+	rm -f $(INST_LIB)/XBase/Memo.pm $(INST_LIB)/XBase/cdx.pm $(INST_LIB)/XBase/Index.pm $(INST_LIB)/XBase/SQL.pm $(INST_LIB)/XBase.pm $(INST_LIB)/DBD/XBase.pm $(INST_LIB)/XBase/Base.pm
 	rm -rf Makefile Makefile.old
 
 
@@ -574,8 +593,6 @@ pure_perl_install ::
 		$(INST_ARCHLIB) $(INSTALLARCHLIB) \
 		$(INST_BIN) $(INSTALLBIN) \
 		$(INST_SCRIPT) $(INSTALLSCRIPT) \
-		$(INST_HTMLLIBDIR) $(INSTALLHTMLPRIVLIBDIR) \
-		$(INST_HTMLSCRIPTDIR) $(INSTALLHTMLSCRIPTDIR) \
 		$(INST_MAN1DIR) $(INSTALLMAN1DIR) \
 		$(INST_MAN3DIR) $(INSTALLMAN3DIR)
 	@$(WARN_IF_OLD_PACKLIST) \
@@ -590,15 +607,12 @@ pure_site_install ::
 		$(INST_ARCHLIB) $(INSTALLSITEARCH) \
 		$(INST_BIN) $(INSTALLBIN) \
 		$(INST_SCRIPT) $(INSTALLSCRIPT) \
-		$(INST_HTMLLIBDIR) $(INSTALLHTMLSITELIBDIR) \
-		$(INST_HTMLSCRIPTDIR) $(INSTALLHTMLSCRIPTDIR) \
 		$(INST_MAN1DIR) $(INSTALLMAN1DIR) \
 		$(INST_MAN3DIR) $(INSTALLMAN3DIR)
 	@$(WARN_IF_OLD_PACKLIST) \
 		$(PERL_ARCHLIB)/auto/$(FULLEXT)
 
 doc_perl_install ::
-	-@$(MKPATH) $(INSTALLARCHLIB)
 	-@$(DOC_INSTALL) \
 		"Module" "$(NAME)" \
 		"installed into" "$(INSTALLPRIVLIB)" \
@@ -608,7 +622,6 @@ doc_perl_install ::
 		>> $(INSTALLARCHLIB)/perllocal.pod
 
 doc_site_install ::
-	-@$(MKPATH) $(INSTALLARCHLIB)
 	-@$(DOC_INSTALL) \
 		"Module" "$(NAME)" \
 		"installed into" "$(INSTALLSITELIB)" \
@@ -701,7 +714,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	@$(PERL) -e "print qq{<SOFTPKG NAME=\"DBIx-FullTextSearch\" VERSION=\"0,53,0,0\">\n}. qq{\t<TITLE>DBIx-FullTextSearch</TITLE>\n}. qq{\t<ABSTRACT></ABSTRACT>\n}. qq{\t<AUTHOR></AUTHOR>\n}. qq{\t<IMPLEMENTATION>\n}. qq{\t\t<OS NAME=\"$(OSNAME)\" />\n}. qq{\t\t<ARCHITECTURE NAME=\"i686-linux\" />\n}. qq{\t\t<CODEBASE HREF=\"\" />\n}. qq{\t</IMPLEMENTATION>\n}. qq{</SOFTPKG>\n}" > DBIx-FullTextSearch.ppd
+	@$(PERL) -e "print qq{<SOFTPKG NAME=\"DBD-XBase\" VERSION=\"0,130,0,0\">\n}. qq{\t<TITLE>DBD-XBase</TITLE>\n}. qq{\t<ABSTRACT>Reads and writes XBase (dbf) files, includes DBI support</ABSTRACT>\n}. qq{\t<AUTHOR>Jan Pazdziora (adelton\@fi.muni.cz)</AUTHOR>\n}. qq{\t<IMPLEMENTATION>\n}. qq{\t\t<OS NAME=\"$(OSNAME)\" />\n}. qq{\t\t<CODEBASE HREF=\"\" />\n}. qq{\t</IMPLEMENTATION>\n}. qq{</SOFTPKG>\n}" > DBD-XBase.ppd
 
 # --- MakeMaker pm_to_blib section:
 

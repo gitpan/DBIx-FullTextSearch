@@ -61,6 +61,7 @@ sub test_one_type {
 		if ($info and @$info) {
 			local $^W = 0;
 			my $textinfo = join "\n", (map { join ' ', @{$_}[0 .. 4] } @$info), '';
+			$textinfo =~ s/PRI\s*?\n/PRI 0\n/g;
 			my $expected = $result_tables_hashref->{$table};
 			$expected =~ s/\|$//mg;
 			if ($textinfo ne $expected) {
@@ -88,11 +89,11 @@ sub test_one_type {
 
 test_one_type(2, 'default parameters (packed document lists)', [],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
-word varchar(30) binary  PRI |
+word varchar(30) binary  PRI 0|
 idx longblob   |
 EOF
 	});
@@ -102,7 +103,7 @@ EOF
 test_one_type(6, 'column backend (unpacked document lists using indexes)',
 	[ 'backend' => 'column' ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
@@ -121,7 +122,7 @@ test_one_type(11, 'column backend with unstandard storage widths',
 	[ 'backend' => 'column', 'doc_id_bits' => 32,
 		'word_id_bits' => 8, 'count_bits' => 24 ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
@@ -141,7 +142,7 @@ test_one_type(16, 'column backend and string frontend',
 	[ 'backend' => 'column', 'frontend' => 'string',
 		'count_bits' => 16, 'name_length' => 63 ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
@@ -165,11 +166,11 @@ test_one_type(22, 'blob backend and string frontend',
 	[ 'backend' => 'blob', 'frontend' => 'string',
 		'word_length' => 34 ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
-word varchar(34) binary  PRI |
+word varchar(34) binary  PRI 0|
 idx longblob   |
 EOF
 	'_fts_test_docid' => <<EOF,
@@ -184,11 +185,11 @@ test_one_type(27, 'blob backend and string frontend, null count info',
 		'word_length' => 20, 'name_length' => 16,
 		'count_bits' => 0, 'doc_id_bits' => 24  ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
-word varchar(20) binary  PRI |
+word varchar(20) binary  PRI 0|
 idx longblob   |
 EOF
 	'_fts_test_docid' => <<EOF,
@@ -203,7 +204,7 @@ test_one_type(32, 'column backend and string frontend, null count info',
 		'word_length' => 20, 'name_length' => 6,
 		'count_bits' => 0, 'doc_id_bits' => 24  ],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
@@ -224,10 +225,10 @@ EOF
 test_one_type(38, 'column backend and table (_fts_test_the_table) frontend',
 	[ 'backend' => 'column', 'frontend' => 'table',
 		'table_name' => '_fts_test_the_table',
-		'column_name' => 'data'
+		'column_name' => 't_data'
 		],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
@@ -241,12 +242,12 @@ id smallint(5) unsigned  PRI 0|
 EOF
 	'_fts_test_the_table' => <<EOF,
 id mediumint(9)  PRI 0|
-data varchar(255) YES  |
+t_data varchar(255) YES  |
 EOF
 	},
 	q!
 	create table _fts_test_the_table (id mediumint not null,
-			data varchar(255),
+			t_data varchar(255),
 			primary key(id))
 	!);
 
@@ -254,19 +255,19 @@ EOF
 test_one_type(45, 'blob and table (_fts_test_the_table) with strings',
 	[ 'frontend' => 'table',
 		'table_name' => '_fts_test_the_table',
-		'column_name' => 'data', 'word_length' => '48'
+		'column_name' => 't_data', 'word_length' => '48'
 		],
 	{ '_fts_test' => <<EOF,
-param varchar(16) binary  PRI |
+param varchar(16) binary  PRI 0|
 value varchar(255) YES  |
 EOF
 	'_fts_test_data' => <<EOF,
-word varchar(48) binary  PRI |
+word varchar(48) binary  PRI 0|
 idx longblob   |
 EOF
 	'_fts_test_the_table' => <<EOF,
-id varchar(16)  PRI |
-data varchar(255) YES  |
+id varchar(16)  PRI 0|
+t_data varchar(255) YES  |
 EOF
 	'_fts_test_docid' => <<EOF,
 name varchar(16) binary  UNI |
@@ -275,7 +276,7 @@ EOF
 	},
 	q!
 	create table _fts_test_the_table (id varchar(16) not null,
-			data varchar(255),
+			t_data varchar(255),
 			primary key(id))
 	!);
 

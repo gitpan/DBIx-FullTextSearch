@@ -6,7 +6,7 @@ use strict;
 sub open {
 	my ($class, $fts) = @_;
 	return bless { 'fts' => $fts }, $class;
-	}
+}
 # Create creates the table(s) according to the parameters
 sub _create_tables {
 	my ($class, $fts) = @_;
@@ -22,7 +22,7 @@ EOF
 	$dbh->do($CREATE_DATA) or return $dbh->errstr;
         push @{$fts->{'created_tables'}}, $fts->{'data_table'};
 	return;
-	}
+}
 
 sub add_document {
 	my ($self, $id, $words) = @_;
@@ -52,15 +52,16 @@ sub add_document {
 		my $rows = $update_sth->execute($value, $word);
 		$insert_sth->execute($word, $value) if $rows == 0;
 		$num_words += $words->{$word};
-		}
+	}
 	
 	return $num_words;
-	}
+}
 
 sub delete_document {
 	my $self = shift;
 	for my $id (@_) { $self->update_document($id, {}); }
-	}
+}
+
 sub update_document {
 	my ($self, $id, $words) = @_;
 	my $fts = $self->{'fts'};
@@ -103,25 +104,26 @@ sub update_document {
 		my ($pos, $shift) = $self->find_position($word, $id);
 		if (not defined $pos) {
 			$insert_sth->execute($word, $value);
-			}
+		}
 		else {
 			my $spos = $pos + 1;	# I'm not sure why this
 			$spos += $packlength if $shift;
 			$update_sth->execute($pos, $value, $spos, $word);	
-			}
+		}
 		delete $words->{$word};	
 		$num_words++ if defined $value;
-		}
+	}
 
 	for my $word ( keys %$words ) {
 		my $value = pack $packstring, $id, $words->{$word};
 		$insert_sth->execute($word, $value);
 		$num_words++;
-		}
+	}
 	$dbh->do("unlock tables");
 
 	return $num_words;
-	}
+}
+
 sub find_position {
 	my ($self, $word, $id) = @_;
 	# here, with the calculation of where in the blob we have the
@@ -179,13 +181,13 @@ sub find_position {
 				push @docs, unpack $packstring,
 					substr $alldata, $i, $packlength;
 				$i += $packlength;
-				}
+			}
 			for (my $i = 0; $i < @docs; $i += 2) {
                                 if ($docs[$i] == $id) { return (($bot+($i/2))*$packlength, 1); }
 				if ($docs[$i] > $id) { return (($bot+($i/2))*$packlength, 0); }
-				}
-			return ($top * $packlength, 0);
 			}
+			return ($top * $packlength, 0);
+		}
 		($val) = $dbh->selectrow_array(
 			"select substring(idx, ?, 2) from $data_table
 			where word = ?", {}, ($med * $packlength) + 1, $word);
@@ -198,9 +200,9 @@ sub find_position {
 		else { $top = $med; }
 
 		$med = int($med * $id / $val);
-		}
-	return ($bot * $packlength, 0);
 	}
+	return ($bot * $packlength, 0);
+}
 
 sub contains_hashref {
 	my $self = shift;
@@ -231,18 +233,18 @@ sub contains_hashref {
 				push @data, unpack $packstring,
 					substr $blob, $i, $packlength;
 				$i += $packlength;
-				}
+			}
 			while (@data) {
 				my $doc = shift @data;
 				my $count = shift @data;
 				unless (defined $out->{$doc}) { $out->{$doc} = 0; }
 				$out->{$doc} += $count;
-				}
 			}
-		$sth->finish;
 		}
-	$out;
+		$sth->finish;
 	}
+	$out;
+}
 
 *parse_and_index_data = \&DBIx::FullTextSearch::parse_and_index_data_count;
 
