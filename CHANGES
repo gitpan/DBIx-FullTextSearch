@@ -1,3 +1,11 @@
+0.53 Mon Jul 10 10:31:13 EST 2000
+
+	Added new module DBIx::FullTextSearch::StopList that implements stoplists.
+
+	Added stemming capability through Lingua::Stem
+
+	Use of splitter on searches as well as indexing.
+
 0.52 Tue Jun 27 12:23:02 EST 2000
 
 	Renamed mycontextadmin to ftsadmin and fixed bugs.

@@ -7,6 +7,7 @@ Makefile.PL
 FullTextSearch.pm
 Phrase.pm
 README
+StopList.pm
 String.pm
 Table.pm
 URL.pm

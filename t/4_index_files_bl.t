@@ -82,9 +82,9 @@ print 'not ' if @notfound > 0;
 print "ok 6\n";
 
 
-print "Calling contains('whi%')\n";
-@docs = sort($fts->contains('whi%'));
-print "Documents containing `whi%': @docs\n";
+print "Calling contains('whi*')\n";
+@docs = sort($fts->contains('whi*'));
+print "Documents containing `whi*': @docs\n";
 $expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 7\n";
@@ -100,9 +100,9 @@ $t1 = new Benchmark;
 print 'Removing took ', timestr(timediff($t1, $t0)), "\n";
 
 
-print "Calling contains('whi%')\n";
-@docs = sort($fts->contains('whi%'));
-print "Documents containing `whi%': @docs\n";
+print "Calling contains('whi*')\n";
+@docs = sort($fts->contains('whi*'));
+print "Documents containing `whi*': @docs\n";
 $expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 9\n";
@@ -119,9 +119,9 @@ $t1 = new Benchmark;
 print 'Reindexing took ', timestr(timediff($t1, $t0)), "\n";
 
 
-print "Calling contains('whi%')\n";
-@docs = sort($fts->contains('whi%'));
-print "Documents containing `whi%': @docs\n";
+print "Calling contains('whi*')\n";
+@docs = sort($fts->contains('whi*'));
+print "Documents containing `whi*': @docs\n";
 $expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 11\n";
@@ -138,14 +138,14 @@ print "ok 12\n";
 __END__
 
 print <<EOF;
-Benchmarking search for whi%, genius and krtek.
+Benchmarking search for whi*, genius and krtek.
 FYI, with version 0.18 the results were
     genius:  3 wallclock secs ( 1.70 usr +  0.16 sys =  1.86 CPU)
      krtek:  4 wallclock secs ( 2.16 usr +  0.14 sys =  2.30 CPU)
      while:  6 wallclock secs ( 2.90 usr +  0.19 sys =  3.09 CPU)
 EOF
 
-timethese(1000, { 'while' => sub { $fts->contains('whi%') },
+timethese(1000, { 'while' => sub { $fts->contains('whi*') },
 	'genius' => sub { $fts->contains('genius') },
 	'krtek' => sub { $fts->contains('krtek') },
 	});

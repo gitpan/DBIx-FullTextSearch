@@ -64,10 +64,10 @@ print "ok 4\n";
 my (@docs, $expected);
 
 
-print "Calling contains('krt%')\n";
-@docs = $fts->contains('krt%');
+print "Calling contains('krt*')\n";
+@docs = $fts->contains('krt*');
 $expected = 'krtek slon_krtek';
-print "Documents containing `krt%': @docs\n";
+print "Documents containing `krt*': @docs\n";
 print "Expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 5\n";
 

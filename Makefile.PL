@@ -67,6 +67,7 @@ WriteMakefile(
 			'Blob.pm' => '$(INST_LIBDIR)/FullTextSearch/Blob.pm',
 			'Column.pm' => '$(INST_LIBDIR)/FullTextSearch/Column.pm',
 			'Phrase.pm' => '$(INST_LIBDIR)/FullTextSearch/Phrase.pm',
+			'StopList.pm' => '$(INST_LIBDIR)/FullTextSearch/StopList.pm',
 			'Table.pm' => '$(INST_LIBDIR)/FullTextSearch/Table.pm',
 			'testconfig/DBIx/FullTextSearch/TestConfig.pm' => '$(INST_LIBDIR)/FullTextSearch/TestConfig.pm',
 			},

@@ -53,7 +53,7 @@ print "Indexed 2, got $words words\n";
 $words = $fts->index_document(3);
 print "Indexed 3, got $words words\n";
 
-@param = 'bodl%';
+@param = 'bodl*';
 print "Calling contains(@param)\n";
 @docs = sort($fts->contains(@param));
 $expected = '2 3';
@@ -122,7 +122,7 @@ print "Indexed jezek, got $words words\n";
 $words = $fts->index_document('krtek');
 print "Indexed krtek, got $words words\n";
 
-@param = 'bodl%';
+@param = 'bodl*';
 print "Calling contains(@param)\n";
 @docs = sort($fts->contains(@param));
 $expected = 'jezek krtek';

@@ -50,9 +50,9 @@ my (@docs, $expected);
 
 
 print "Calling contains('krtek')\n";
-@docs = sort($fts->contains('krt%'));
+@docs = sort($fts->contains('krt*'));
 $expected = 'krtek slon_krtek';
-print "Documents containing `krt%': @docs\n";
+print "Documents containing `krt*': @docs\n";
 print "Expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 5\n";
 

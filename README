@@ -54,6 +54,15 @@ Main goals were:
 		to write Perl code to do tests or simple things.
 
 Main plans (ToDo):
+	implement the following Scoring Algorithm:
+
+		for a word in a doc
+		      (occurances in doc)                    num docs
+		------------------------------- * log ( ------------------ )
+		(max occur in doc of all words)         num docs with word
+
+	implement Thesaurus (using Linuga::Wordnet???)
+
 	extend the documentation to show how you can use your own
 		splitter and filter to strip down the HTML markup;
 	extend the backends so that one DBIx::FullTextSearch index can store more

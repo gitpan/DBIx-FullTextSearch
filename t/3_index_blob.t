@@ -77,7 +77,7 @@ print 'not ' if @notfound > 0;
 print "ok 7\n";
 
 
-@param = qw!+krt% -rulez +is!;
+@param = qw!+krt* -rulez +is!;
 print "Calling econtains(@param)\n";
 @docs = $fts->econtains(@param);
 $expected = '4';
@@ -86,7 +86,7 @@ print "Expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 8\n";
 
 
-@param = qw!krt% -all is -rulez!;
+@param = qw!krt* -all is -rulez!;
 print "Calling econtains(@param)\n";
 @docs = sort($fts->econtains(@param));
 $expected = '3 4';
