@@ -5,9 +5,9 @@ use vars qw! @ISA !;
 
 sub index_document {
 	my ($self, $id, $data) = @_;
-	$data .= ' ' if $data;
-	$data .= $self->get_the_data_from_table($id);
-	$self->SUPER::index_document($id, $data);
+	my @data_sets = $self->get_the_data_from_table($id);
+	push @data_sets, $data if $data;
+	$self->SUPER::index_document($id, \@data_sets);
 }
 
 package DBIx::FullTextSearch::TableNum;
@@ -16,9 +16,9 @@ use vars qw! @ISA !;
 
 sub index_document {
 	my ($self, $id, $extra_data) = @_;
-	my $data = $self->get_the_data_from_table($id);
-	$data .= " $extra_data" if $extra_data;
-	$self->SUPER::index_document($id, $data);
+	my @data_sets = $self->get_the_data_from_table($id);
+	push @data_sets, $extra_data if $extra_data;
+	$self->SUPER::index_document($id, \@data_sets);
 }
 
 
@@ -136,8 +136,7 @@ sub get_the_data_from_table {
 			") );
 
 	my @data_ary = $dbh->selectrow_array($get_data, {}, $id);
-	my $data = join (" ", @data_ary);
-	return $data;
+	return wantarray ? @data_ary : join(" ", @data_ary);
 }
 
 1;

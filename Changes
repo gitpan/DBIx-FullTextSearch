@@ -1,3 +1,7 @@
+0.72 December 16th 2002
+	Fixed bug with table/phrase search where phrase would wrap into
+	next column (Kate L Pugh)
+
 0.71 September 18th 2002
         Updated MANIFEST to include missing files.
 

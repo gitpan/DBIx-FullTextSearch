@@ -12,7 +12,7 @@ use Parse::RecDescent;
 
 use vars qw($errstr $VERSION $parse);
 $errstr = undef;
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 use locale;
 
@@ -323,8 +323,12 @@ sub parse_and_index_data_count {
 	# HTML tags, ...)
 
 	my %words;
+  my @data_sets = ref $data ? @$data : ($data);
 
-	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
+	# We can just join the data sets together, since we don't care about position
+  my $data_string = join(" ", @data_sets);
+
+	my $filter = $self->{'filter'} . ' $data_string =~ ' . $self->{'index_splitter'};
 	my $stoplist = $self->{'stoplist'};
 	my $stemmer = $self->{'stemmer'};
 	my @words = eval $filter;
@@ -359,10 +363,12 @@ sub parse_and_index_data_list {
 	# HTML tags, ...)
 
 	my %words;
+  my @data_sets = ref $data ? @$data : ($data);
 
-	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
+  foreach my $data_set (@data_sets) {
+		my $filter = $self->{'filter'}.' $data_set =~ '.$self->{'index_splitter'};
 
-	my $i = 0;
+		my $i = 0; # $i stores the position(s) of each word in the document.
 	my $stoplist = $self->{'stoplist'};
 	my $stemmer = $self->{'stemmer'};
 	my @words = eval $filter;
@@ -371,6 +377,10 @@ sub parse_and_index_data_list {
 	for my $word ( @words ) {
 		push @{$words{$word}}, ++$i;
 	} 
+		# Make sure the data sets are considered far apart in position, to
+    # avoid phrase searches overlapping between table columns.
+    $i += 100;
+	}
 
 	my @result;
 	if ($adding_doc) {
@@ -611,6 +621,11 @@ sub common_word {
 	$self->{'db_backend'}->common_word($k);
 }
 
+sub DESTROY {
+	my $self = shift;
+	$self->{'db_backend'}->DESTROY()
+		if (exists $self->{'db_backend'} && $self->{'db_backend'} &&$self->{'db_backend'}->can('DESTROY'));
+}
 
 1;
 
@@ -1122,7 +1137,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.71.
+This documentation describes DBIx::FullTextSearch module version 0.72.
 
 =head1 BUGS
 
@@ -1138,7 +1153,7 @@ No scoring algorithm implemented.
 =head1 DEVELOPMENT
 
 These modules are under active development.
-If you would like to contribute, please e-mail tjmather@tjmather.com
+If you would like to contribute, please e-mail tjmather@maxmind.com
 
 There are two mailing lists for this module, one for users, and another for developers.  To subscribe,
 visit http://sourceforge.net/mail/?group_id=8645
@@ -1149,8 +1164,11 @@ visit http://sourceforge.net/mail/?group_id=8645
 http://www.fi.muni.cz/~adelton/ at Faculty of Informatics, Masaryk University in Brno, Czech
 Republic
 
-(Current Maintainer) T.J. Mather, tjmather@tjmather.com,
-http://www.tjmather.com/ New York, NY, USA
+(Current Maintainer) T.J. Mather, tjmather@maxmind.com,
+http://www.maxmind.com/app/opensourceservices Princeton, NJ USA
+
+Paid support is available from directly from the maintainers of this package.
+Please see L<http://www.maxmind.com/app/opensourceservices> for more details.
 
 =head1 CREDITS
 
