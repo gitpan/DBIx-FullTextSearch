@@ -6,7 +6,7 @@ use vars qw! @ISA !;
 @ISA = qw! DBIx::FullTextSearch::String !;
 
 sub index_document {
-	my ($self, $file) = @_;
+	my ($self, $file, $extra_data) = @_;
 	my $dbh = $self->{'dbh'};
 
 	open FILE, $file or do {
@@ -18,6 +18,7 @@ sub index_document {
 		local $/ = undef;
 		$data = <FILE>;
 	}
+	$data .= " $extra_data" if $extra_data;
 	close FILE;
 	$self->SUPER::index_document($file, $data);
 }

@@ -134,7 +134,7 @@ Success reports and ideas:
 	DBIx::FullTextSearch(3) man page.
 
 Available:
-	http://www.thoughtstore.com/~tjmather/perl/
+	http://search.cpan.org/search?dist=DBIx-FullTextSearch
 
 Copyright: (c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
 	(c) 1999 Jan Pazdziora, adelton@fi.muni.cz. 

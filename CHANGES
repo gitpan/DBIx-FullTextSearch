@@ -1,11 +1,18 @@
-0.541 Thurs Aug 31 12:16:49 EST 2000
+0.55 Tue Sep 19 18:57:25 EST 2000
+
+	Added optional extra content for index_document method on
+		file, url and table frontends.
+
+	Fixed bug in contains_hashref in Column.pm (Ade Olonoh)
+
+0.541 Thu Aug 31 12:16:49 EST 2000
 
 	Fixed test suite (6_stoplist.t)
 
 0.54 Tue Aug 29 16:01:12 EST 2000
 
         Fixed test suites (1_create.t and 4_index_table.t) to support MySQL 3.23 versions
-        Thanks to Tarik Alkasab <tarik@alkasab.com> for bug fixes.
+        Thanks to Tarik Alkasab for bug fixes.
 
         Added test script for stoplists.
 

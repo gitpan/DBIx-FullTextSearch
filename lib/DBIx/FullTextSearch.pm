@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.541';
+$VERSION = '0.55';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -76,7 +76,7 @@ sub open {
     
 		$mydbh = 1;
 	}
-  
+
 	# load the parameters to the object
 	my %PARAMS = %DEFAULT_PARAMS;
 	my $sth = $dbh->prepare("select * from $TABLE");
@@ -101,17 +101,17 @@ sub open {
 		    %PARAMS,
 		   }, $class;
 	my $data_table = $self->{'data_table'};
-  
+
 	# we should disconnect if we've opened the dbh here
 	if ($mydbh) { $self->{'disconnect_on_destroy'} = 1; }
-  
+
 	# some basic sanity check
 	if (not defined $dbh->selectrow_array("select count(*) from $data_table")) {
 		$errstr = "Table $data_table not found in the database\n";
 		return;
 	}
-  
-  
+
+
 	# load and set the application frontend
 	my $front_module = $frontend_types{$PARAMS{'frontend'}};
 	if (defined $front_module) {
@@ -125,7 +125,7 @@ sub open {
 	else {
 		$errstr = "Specified frontend type `$PARAMS{'frontend'}' is unknown\n"; return;
 	}
-  
+
 	# load and set the backend (actual database access) module
 	my $back_module = $backend_types{$PARAMS{'backend'}};
 	if (defined $back_module) {
@@ -136,21 +136,21 @@ sub open {
 	else {
 		$errstr = "Specified backend type `$PARAMS{'backend'}' is unknown\n"; return;
 	}
-  
+
 	# load DBIx::FullTextSearch::StopList object (if specified)
 	if ($PARAMS{'stoplist'}) {
 		eval "use DBIx::FullTextSearch::StopList";
 		die $@ if $@;
 		$self->{'stoplist'} = DBIx::FullTextSearch::StopList->open($dbh, $PARAMS{'stoplist'});
 	}
-  
+
 	# load Lingua::Stem object (if specified)
 	if($PARAMS{'stemmer'}){
 		eval "use Lingua::Stem";
 		die $@ if $@;
 		$self->{'stemmer'} = Lingua::Stem->new(-locale => $PARAMS{'stemmer'});
 	}
-  
+
 	# finally, return the object
 	$self;
 }
@@ -166,20 +166,20 @@ sub create {
 			or do { $errstr = $DBI::errstr; return; };
 		$mydbh = 1;
 	}
-  
+
 	my $self = bless {
 		'dbh' => $dbh,
 		'table' => $TABLE,
 		%DEFAULT_PARAMS,
 		%OPTIONS
 		}, $class;
-  
+
 	$self->{'data_table'} = $TABLE.'_data'
 				unless defined $self->{'data_table'};
-  
+
 	# convert array reference to CSV string
 	$self->{'column_name'} = join(",",@{$self->{'column_name'}}) if ref($self->{'column_name'}) eq 'ARRAY';
-  
+
 	my $CREATE_PARAM = <<EOF;
 		create table $TABLE (
 			param varchar(16) binary not null,
@@ -328,7 +328,7 @@ sub parse_and_index_data_count {
 		$words{$word} = 0 if not defined $words{$word};
 		$words{$word}++;
 	}
-  
+
 	my @result;
 	if ($adding_doc) {
 		@result = $backend->add_document($id, \%words);
@@ -366,14 +366,14 @@ sub parse_and_index_data_list {
 	for my $word ( @words ) {
 		push @{$words{$word}}, ++$i;
 	} 
-  
+
 	my @result;
 	if ($adding_doc) {
 		@result = $backend->add_document($id, \%words);
 	} else {
 		@result = $backend->update_document($id, \%words);
 	}
-  
+
 	if (wantarray) {
 		return @result;
 	}
@@ -655,7 +655,7 @@ file is read by the DBIx::FullTextSearch transparently:
 
 =item url
 
-Web document can be indexed by the frontend B<url>. DBIx::FullTextSearch uses LWP to
+Web document can be indexed by the frontend B<url>. DBIx::FullTextSearch uses L<LWP> to
 get the document and then parses it normally:
 
 	$fts->index_document('http://www.perl.com/');
@@ -677,7 +677,8 @@ numeric id, otherwise a string's way of converting the id to numeric
 form is used.
 
 When creating this index, you'll have to pass it three additionial options,
-table_name, column_name, and column_id_name.
+C<table_name>, C<column_name>, and C<column_id_name>.  You may use the optional
+column_process option to pre-process data in the specified columns.
 
 =back
 
@@ -746,9 +747,9 @@ kyselka (or kyselky, or so) is just before word Mattoni.
 =head2 Mixing frontends and backends
 
 Any frontend can be used with any backend in one DBIx::FullTextSearch index. You
-can index Web documents with B<url> frontend and B<phrase> backend
+can index Web documents with C<url> frontend and C<phrase> backend
 to be able to find phrases in the documents. And you can use the
-default, number based document scheme with B<blob> backend to use the disk
+default, number based document scheme with C<blob> backend to use the disk
 space as efficiently as possible -- this is usefull for example for
 mailing-list archives, where we need to index huge number of documents
 that do not change at all.
@@ -756,7 +757,7 @@ that do not change at all.
 Finding optimal combination is very important and may require some
 analysis of the document collection and manipulation, as well as the
 speed and storage requirements. Benchmarking on actual target platform
-is very usefull during the design phase.
+is very useful during the design phase.
 
 =head1 METHODS
 
@@ -768,7 +769,7 @@ The following methods are available on the user side as DBIx::FullTextSearch API
 
 	my $fts = DBIx::FullTextSearch->create($dbh, $index_name, %opts);
 
-The class method B<create> creates index of given name (the name of the
+The class method C<create> creates index of given name (the name of the
 index is the name of its basic parameter table) and all necessary
 tables, returns an object -- newly created index. The options that may
 be specified after the index name define the frontend and backend types,
@@ -780,7 +781,7 @@ list of create options and discussion of their use.
 	my $fts = DBIx::FullTextSearch->open($dbh, $index_name);
 
 Opens and returns object, accessing specifies DBIx::FullTextSearch index. Since all
-the index parameters and information are stored in the $index_name table
+the index parameters and information are stored in the C<$index_name> table
 (including names of all other needed tables), the database handler and
 the name of the parameter table are the only needed arguments.
 
@@ -788,17 +789,18 @@ the name of the parameter table are the only needed arguments.
 
 	$fts->index_document(45, 'Sleva pri nakupu stribra.');
 	$fts->index_document('http://www.mozilla.org/');
+	$fts->index_document('http://www.mozilla.org/','This is the mozilla web site');
 
-For the default and B<string> frontends, two arguments are expected -- the
-name (number or string) of the document and its content. For B<file> and
-B<url> frontends only the name of the document is needed. The method
-returns number of words indexed (subject to wild change).
+For the C<default> and C<string> frontends, two arguments are expected -- the
+name (number or string) of the document and its content. For C<file>,
+C<url>, and C<table> frontends the content is optional.  Any content that you pass
+will be appended to the content from the file, URL, or database table.
 
 =item delete_document
 
 	$fts->delete_document('http://www.mozilla.org/');
 
-Removes information about document from the index. Note that for B<blob>
+Removes information about document from the index. Note that for C<blob>
 backend this is very time consuming process.
 
 =item contains
@@ -818,7 +820,7 @@ present in the document for it to match.
 
 =item contains_hashref, econtains_hashref
 
-Similar to B<contains> and B<econtains>, only instead of list of document
+Similar to C<contains> and C<econtains>, only instead of list of document
 names, there methods return a hash reference to a hash where keys are
 the document names and values are the number of occurencies of the
 words.
@@ -847,21 +849,21 @@ Emptys the index so you can reindex the data.
 
 =head1 INDEX OPTIONS
 
-Here we list the options that may be passed to DBIx::FullTextSearch->create call.
+Here we list the options that may be passed to DBIx::FullTextSearch-E<gt>create call.
 These allow to specify the style and storage parameters in great detail.
 
 =over 4
 
 =item backend
 
-The backend type, default B<blob>, possible values blob, column and phrase
+The backend type, default C<blob>, possible values C<blob>, C<column> and C<phrase>
 (see above for explanation).
 
 =item frontend
 
-The frontend type. The default frontend requires the user to specify
+The frontend type. The C<default> frontend requires the user to specify
 numeric id of the document together with the content of the document,
-other possible values are string, file and url (see above for
+other possible values are C<string>, C<file> and C<url> (see above for
 more info).
 
 =item word_length
@@ -882,7 +884,7 @@ specifies maximum length of these string names (URLs, file names, ...).
 
 =item blob_direct_fetch
 
-Only for blob backend. When looking for information about specific
+Only for C<blob> backend. When looking for information about specific
 document in the list stored in the blob, the blob backend uses division
 of interval to find the correct place in the blob. When the interval
 gets equal or shorter that this value, all values are fetched from the
@@ -890,7 +892,7 @@ database and the final search is done in Perl code sequentially.
 
 =item word_id_bits
 
-With column or phase backends, DBIx::FullTextSearch maintains a numeric id for each
+With C<column> or C<phase> backends, DBIx::FullTextSearch maintains a numeric id for each
 word to optimize the space requirements. The word_id_bits parameter
 specifies the number of bits to reserve for this conversion and thus
 effectively limits number of distinct words that may be indexed. The
@@ -899,17 +901,17 @@ default is 16 bits and possible values are 8, 16, 24 or 32 bits.
 =item word_id_table
 
 Name of the table that holds conversion from words to their numeric id
-(for column and phrase backends). By default is the name of the index
+(for C<column> and C<phrase> backends). By default is the name of the index
 with _words suffix.
 
 =item doc_id_bits
 
 A number of bits to hold a numeric id of the document (that is either
-provided by the user (with default frontend) or generated by the module
+provided by the user (with C<default> frontend) or generated by the module
 to accomplish the conversion from the string name of the document). This
 value limits the maximum number of documents to hold. The default is 16
-bits and possible values are 8, 16 and 32 bits for blob backend and 8,
-16, 24 and 32 bits for column and phrase backends.
+bits and possible values are 8, 16 and 32 bits for C<blob> backend and 8,
+16, 24 and 32 bits for C<column> and C<phrase> backends.
 
 =item doc_id_table
 
@@ -925,7 +927,7 @@ with doc_id_bits.
 
 =item position_bits
 
-With phrase backend, DBIx::FullTextSearch stores positions of each word of the
+With C<phrase backend>, DBIx::FullTextSearch stores positions of each word of the
 documents. This value specifies how much space should be reserved for
 this purpose. The default is 32 bits and possible values are 8, 16 or 32
 bits. This value limits the maximum number of words of each document
@@ -949,12 +951,13 @@ words indexed is 2.
 
 =item search_splitter
 
-This is similar to the index_splitter method, except that it is used in the contains_hashref method 
+This is similar to the C<index_splitter> method,
+except that it is used in the C<contains_hashref> method 
 when searching for documents instead of when indexing documents.  The default is
 
        /([a-zA-Z_0-9]{2,$word_length}\*?)/g
 
-Which, unlike the default index_splitter, allows for the wild card character (*).
+Which, unlike the default C<index_splitter>, allows for the wild card character (*).
 
 =item filter
 
@@ -990,18 +993,18 @@ All locale identifiers are converted to lowercase.
 
 =item table_name
 
-For table frontend; this is the name of the table that will be indexed.
+For C<table> frontend; this is the name of the table that will be indexed.
 
 =item column_name
 
-For table frontend; this is a reference to an array of columns in the
-table_name that contains the documents -- data to be indexed. It can
-also have a form table.column that will be used if the table_name
+For C<table> frontend; this is a reference to an array of columns in the
+C<table_name> that contains the documents -- data to be indexed. It can
+also have a form table.column that will be used if the C<table_name>
 option is not specified.
 
 =item column_id_name
 
-For table frontend; this is the name of the field in table_name that
+For C<table> frontend; this is the name of the field in C<table_name> that
 holds names (ids) of the records. If not specified, a field that has
 primary key on it is used. If this field is numeric, it's values are
 directly used as identifiers, otherwise a conversion to numeric values
@@ -1012,17 +1015,17 @@ is made.
 =head1 ERROR HANDLING
 
 The create and open methods return the DBIx::FullTextSearch object on success, upon
-failure they return undef and set error message in $DBIx::FullTextSearch::errstr
+failure they return undef and set error message in C<$DBIx::FullTextSearch::errstr>
 variable.
 
 All other methods return reasonable (documented above) value on success,
 failure is signalized by unreasonable (typically undef or null) return
-value; the error message may then be retrieved by $fts->errstr method
+value; the error message may then be retrieved by C<$fts-E<gt>errstr> method
 call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.541.
+This documentation describes DBIx::FullTextSearch module version 0.55.
 
 =head1 BUGS
 
@@ -1035,14 +1038,32 @@ No CGI administration tool at the moment.
 
 No scoring algorithm implemented.
 
+=head1 DEVELOPMENT
+
+These modules are under active development.  Currently a PostgreSQL version is being developed.
+If you would like to contribute, please e-mail tj@anidea.com
+
+There are two mailing lists for this module, one for users, and another for developers.  To subscribe,
+visit http://sourceforge.net/mail/?group_id=8645
+
 =head1 AUTHOR
 
 (Original) Jan Pazdziora, adelton@fi.muni.cz,
 http://www.fi.muni.cz/~adelton/ at Faculty of Informatics, Masaryk University in Brno, Czech
 Republic
 
-(Current Maintainer) Thomas J. Mather, tjmather@alumni.princeton.edu,
-http://www.thoughtstore.com/~tjmather/ New York, NY, USA
+(Current Maintainer) Thomas J. Mather, tj@anidea.com,
+http://www.thoughtstore.com/tjmather/ New York, NY, USA
+
+=head1 CREDITS
+
+Fixes, Bug Reports have been generously provided by:
+
+  Ade Olonoh
+  Andrew Turner
+  Tarik Alkasab
+
+Thanks!
 
 =head1 COPYRIGHT
 
@@ -1051,11 +1072,11 @@ redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-DBI, ftsadmin, L<DBIx::FullTextSearch::StopWord>
+L<DBI>, ftsadmin, L<DBIx::FullTextSearch::StopWord>
 
 =head1 OTHER PRODUCTS and why I've written this module
 
-I'm aware of DBIx::TextIndex module and about UdmSearch utility, and
+I'm aware of C<DBIx::TextIndex> module and about UdmSearch utility, and
 about htdig and glimpse on the non-database side of the world.
 
 To me, using a database gives reasonable maintenance benefits. With
@@ -1070,7 +1091,7 @@ backend. With MySQL, you get remote access and access control for free,
 and on many web servers MySQL is part of the standard equipment. So
 using it for text indexes seemed natural.
 
-However, existing DBIx::TextIndex and UdmSearch are too narrow-aimed to
+However, existing L<DBIx::TextIndex> and UdmSearch are too narrow-aimed to
 me. The first only supports indexing of data that is stored in the
 database, but you may not always want or need to store the documents in
 the database as well. The UdmSearch on the other hand is only for web

@@ -74,7 +74,7 @@ sub add_document {
 				select id, ?, ? from $word_id_table
 					where word = ?")
 			);
-	
+
 	my $packstring = $DBIx::FullTextSearch::BITS_TO_PACK{$fts->{'position_bits'}};
 
 	my $num_words = 0;

@@ -4,8 +4,9 @@ use vars qw! @ISA !;
 @ISA = qw! DBIx::FullTextSearch::String DBIx::FullTextSearch::Table !;
 
 sub index_document {
-	my ($self, $id) = @_;
-	my $data = $self->get_the_data_from_table($id);
+	my ($self, $id, $data) = @_;
+	$data .= ' ' if $data;
+	$data .= $self->get_the_data_from_table($id);
 	$self->SUPER::index_document($id, $data);
 }
 
@@ -14,8 +15,9 @@ use vars qw! @ISA !;
 @ISA = qw! DBIx::FullTextSearch::Table !;
 
 sub index_document {
-	my ($self, $id) = @_;
+	my ($self, $id, $extra_data) = @_;
 	my $data = $self->get_the_data_from_table($id);
+	$data .= " $extra_data" if $extra_data;
 	$self->SUPER::index_document($id, $data);
 }
 

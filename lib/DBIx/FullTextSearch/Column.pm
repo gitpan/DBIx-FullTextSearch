@@ -73,7 +73,7 @@ sub add_document {
 					where word = ?")
 			: $dbh->prepare("
 				insert into $data_table
-				select id, ?, from $word_id_table
+				select id, ? from $word_id_table
 					where word = ?")
 			) );
 	my $num_words = 0;
@@ -116,16 +116,16 @@ sub contains_hashref {
 	my $sth = ( defined $self->{'get_data_sth'}
 		? $self->{'get_data_sth'}
 		: ( $count_bits
-		? $self->{'get_data_sth'} = $dbh->prepare(
+		? ( $self->{'get_data_sth'} = $dbh->prepare(
 			"select doc_id, count
 			from $data_table, $word_id_table
 			where word like ?
-				and id = word_id" )
-		: $self->{'get_data_sth'} = $dbh->prepare(
+				and id = word_id" ) )
+		: ( $self->{'get_data_sth'} = $dbh->prepare(
 			"select doc_id, 1
 			from $data_table, $word_id_table
 			where word like ?
-				and id = word_id" )
+				and id = word_id" ) )
 			) );
 
 	my $out = {};
