@@ -1,3 +1,9 @@
+0.63 June 21 2002
+	Improved performance for add_document in Phrase and Column backends
+	(Taco Hoekwater)
+
+	Makefile.PL fails if DBD::mysql not available
+
 0.62 May 09 2002
 	Fix for delete_document() for Column backend (Vladimir Bogdanov)
 

@@ -2,6 +2,12 @@
 use strict;
 use ExtUtils::MakeMaker;
 use Data::Dumper;
+use DBI;
+
+# see if mysql driver is available
+unless (grep /mysql/, DBI->available_drivers) {
+  die "DBIx::FullTextSearch requires DBD::mysql - see README for details";
+}
 
 # this is to catch values from previous perl Makefile.PL run
 use lib 'testconfig';

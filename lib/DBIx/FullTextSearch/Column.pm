@@ -8,6 +8,13 @@ sub open {
 	return bless { 'fts' => $fts }, $class;
 }
 
+sub DESTROY {
+  my ($self) = @_;
+  if (defined $self->{'select_wordid_sth'}) {
+	$self->{'select_wordid_sth'}->finish();
+  }
+}
+
 # Create creates the table(s) according to the parameters
 sub _create_tables {
 	my ($class, $fts) = @_;
@@ -48,46 +55,54 @@ EOF
 }
 
 sub add_document {
-	my ($self, $id, $words) = @_;
-	my $fts = $self->{'fts'};
-	my $dbh = $fts->{'dbh'};
-	my $data_table = $fts->{'data_table'};
-	my $word_id_table = $fts->{'word_id_table'};
-	if (not defined $self->{'insert_wordid_sth'}) {
-		$self->{'insert_wordid_sth'} = $dbh->prepare("
-			insert into $word_id_table (word) values (?)
-			");
-		$self->{'insert_wordid_sth'}->{'PrintError'} = 0;
-		$self->{'insert_wordid_sth'}->{'RaiseError'} = 0;
+  my ($self, $id, $words) = @_;
+  my $fts = $self->{'fts'};
+  my $dbh = $fts->{'dbh'};
+  my $word_id_table = $fts->{'word_id_table'};
+  if (not defined $self->{'select_wordid_sth'}) {
+    $self->{'select_wordid_sth'} = $dbh->prepare("
+       select id from $word_id_table where word = ?
+       ");
+  }
+  my $data_table = $fts->{'data_table'};
+  my $count_bits = $fts->{'count_bits'};
+  my $num_words = 0;
+  my (@wids,@data,@widshandler,@datahandler);
+  my $wordid;
+  $dbh->do("lock tables $word_id_table write");
+  my ($maxid) = $dbh->selectrow_array("select max(id) 
+                                       from $word_id_table");
+  foreach my $word (keys %$words) {
+    if(!defined $self->{'wordids'}->{$word}) {
+      $self->{'select_wordid_sth'}->execute($word);
+      ($wordid) = $self->{'select_wordid_sth'}->fetchrow_array();
+      unless ($wordid) { 
+	$maxid++;
+	push @widshandler, "(?,$maxid)";
+	push @wids, $word;
+	$wordid = $maxid;
+      }
+      $self->{'wordids'}->{$word} = $wordid;
+    } else {
+      $wordid=$self->{'wordids'}->{$word};
+    }
+	if ($count_bits) {
+	  push @datahandler, "($wordid,$id,?)";
+	  push @data, $words->{$word};
+	} else {
+	  push @datahandler, "($wordid,$id)";
 	}
-	my $insert_wordid_sth = $self->{'insert_wordid_sth'};
-
-	my $count_bits = $fts->{'count_bits'};
-	my $insert_worddoc_sth = ( defined $self->{'insert_worddoc_sth'}
-		? $self->{'insert_worddoc_sth'}
-		: $self->{'insert_worddoc_sth'} = (
-			$count_bits
-			? $dbh->prepare("
-				insert into $data_table
-				select id, ?, ? from $word_id_table
-					where word = ?")
-			: $dbh->prepare("
-				insert into $data_table
-				select id, ? from $word_id_table
-					where word = ?")
-			) );
-	my $num_words = 0;
-	for my $word ( keys %$words ) {
-		$insert_wordid_sth->execute($word);
-		if ($count_bits) {
-			$insert_worddoc_sth->execute($id, $words->{$word}, $word);
-		}
-		else {
-			$insert_worddoc_sth->execute($id, $word);
-		}
-		$num_words += $words->{$word};
-	}
-	return $num_words;
+	$num_words++;
+  };
+  $dbh->do("insert into $word_id_table values " . 
+	   join (',',@widshandler),undef,@wids) if @wids;
+  $dbh->do("unlock tables");
+  if ($count_bits) {
+	$dbh->do("insert into $data_table values " . join (',',@datahandler),undef,@data) if @data;
+  } else {
+	$dbh->do("insert into $data_table values " . join (',',@datahandler)) if @datahandler;
+  }
+  return $num_words;
 }
 
 sub delete_document {

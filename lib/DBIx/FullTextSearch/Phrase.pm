@@ -10,6 +10,14 @@ sub open {
 	return bless { 'fts' => $fts }, $class;
 }
 
+sub DESTROY {
+  my ($self) = @_;
+  if (defined $self->{'select_wordid_sth'}) {
+	$self->{'select_wordid_sth'}->finish();
+  }
+}
+
+
 # Create creates the table(s) according to the parameters
 sub _create_tables {
 	my ($class, $fts) = @_;
@@ -48,42 +56,49 @@ EOF
 }
 
 sub add_document {
-	my ($self, $id, $words) = @_;
-		# here the value in the %$words hash is an array of word
-		# positions
-	my $fts = $self->{'fts'};
-	my $dbh = $fts->{'dbh'};
-	my $data_table = $fts->{'data_table'};
-	my $word_id_table = $fts->{'word_id_table'};
-	if (not defined $self->{'insert_wordid_sth'}) {
-		$self->{'insert_wordid_sth'} = $dbh->prepare("
-			insert into $word_id_table (word) values (?)
-			");
-		$self->{'insert_wordid_sth'}->{'PrintError'} = 0;
-		$self->{'insert_wordid_sth'}->{'RaiseError'} = 0;
-	}
-	my $insert_wordid_sth = $self->{'insert_wordid_sth'};
-
-	my $count_bits = $fts->{'count_bits'};
-	my $insert_worddoc_sth = ( defined $self->{'insert_worddoc_sth'}
-		? $self->{'insert_worddoc_sth'}
-		: $self->{'insert_worddoc_sth'} = 
-			$dbh->prepare("
-				insert into $data_table
-				select id, ?, ? from $word_id_table
-					where word = ?")
-			);
-
-	my $packstring = $DBIx::FullTextSearch::BITS_TO_PACK{$fts->{'position_bits'}};
-
-	my $num_words = 0;
-	for my $word ( keys %$words ) {
-		$insert_wordid_sth->execute($word);
-		my $values = pack $packstring.'*', @{$words->{$word}};
-		$insert_worddoc_sth->execute($id, $values, $word);
-		$num_words++;
-	}
-	return $num_words;
+  my ($self, $id, $words) = @_;
+  # here the value in the %$words hash is an array of word
+  # positions
+  my $fts = $self->{'fts'};
+  my $dbh = $fts->{'dbh'};
+  my $word_id_table = $fts->{'word_id_table'};
+  if (not defined $self->{'select_wordid_sth'}) {
+    $self->{'select_wordid_sth'} = $dbh->prepare("
+       select id from $word_id_table where word = ?
+       ");
+  }
+  my $data_table = $fts->{'data_table'};
+  my $packstring = $DBIx::FullTextSearch::BITS_TO_PACK{$fts->{'position_bits'}};
+  my $num_words = 0;
+  my (@wids,@data,@widshandler,@datahandler);
+  my $wordid;
+  $dbh->do("lock tables $word_id_table write");
+  my ($maxid) = $dbh->selectrow_array("select max(id) 
+                                       from $word_id_table");
+  foreach my $word (keys %$words) {
+    if(!defined $self->{'wordids'}->{$word}) {
+      $self->{'select_wordid_sth'}->execute($word);
+      ($wordid) = $self->{'select_wordid_sth'}->fetchrow_array();
+      unless ($wordid) { 
+	$maxid++;
+	push @widshandler, "(?,$maxid)";
+	push @wids, $word;
+	$wordid = $maxid;
+      }
+      $self->{'wordids'}->{$word} = $wordid;
+    } else {
+      $wordid=$self->{'wordids'}->{$word};
+    }
+    push @datahandler, "($wordid,$id,?)";
+    push @data, pack $packstring.'*', @{$words->{$word}};
+    $num_words++;
+  };
+  $dbh->do("insert into $word_id_table values " . 
+	   join (',',@widshandler),undef,@wids) if @wids;
+  $dbh->do("unlock tables");
+  $dbh->do("insert into $data_table values " . 
+	   join (',',@datahandler),undef,@data) if @data;
+  return $num_words;
 }
 
 sub update_document {
