@@ -71,7 +71,7 @@ my (@docs, $expected);
 print "Calling contains('while')\n";
 @docs = sort($fts->contains('while'));
 print "Documents containing `while': @docs\n";
-$expected = 'Index.modul Makefile Makefile.old Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 5\n";
 
@@ -85,7 +85,7 @@ print "ok 6\n";
 print "Calling contains('whi%')\n";
 @docs = sort($fts->contains('whi%'));
 print "Documents containing `whi%': @docs\n";
-$expected = 'Base.modul Changes Index.modul Makefile Makefile.old Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 7\n";
 
@@ -103,7 +103,7 @@ print 'Removing took ', timestr(timediff($t1, $t0)), "\n";
 print "Calling contains('whi%')\n";
 @docs = sort($fts->contains('whi%'));
 print "Documents containing `whi%': @docs\n";
-$expected = 'Base.modul Changes Index.modul Makefile Makefile.old Memo.modul MyConText.modul SQL.modul driver_characteristics dump';
+$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 9\n";
 
@@ -122,7 +122,7 @@ print 'Reindexing took ', timestr(timediff($t1, $t0)), "\n";
 print "Calling contains('whi%')\n";
 @docs = sort($fts->contains('whi%'));
 print "Documents containing `whi%': @docs\n";
-$expected = 'Base.modul Changes Index.modul Makefile Makefile.old Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
+$expected = 'Base.modul Index.modul Memo.modul MyConText.modul SQL.modul XBase.modul driver_characteristics dump';
 print "expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 11\n";
 

@@ -1,3 +1,23 @@
+0.51 Mon Jun 26 0:41:46  EST 2000
+
+	Added new method "empty" that empties index
+
+	Table frontend now supports multiple columns in column_name field
+
+	Fixed bug with setting column_id_name
+
+	Fixed bug with %PRECISION_TO_BITS - failed with mediumint(8) column_id_name
+
+0.50 Fri Jun 16 16:41:05  EST 2000
+
+	Rewrote contains method in Phrase.pm, now supports econtains, and
+	fixed bug with words that occur in more than one document.
+	Added new method "search" to FullTextSearch.pm, parses a user
+	input string into can-include, must-include, and must-not-include
+	words and phrases.
+
+	Renamed MyConText to DBIx::FullTextSearch.pm.  T.J. Mather
+	is now maintaining this module.
 
 0.48 Mon Oct  4 09:38:23 CEST 1999
 

@@ -1,6 +1,6 @@
 
 			-------------------------
-				DBIx::FullTextSearch
+			  DBIx::FullTextSearch
 			-------------------------
 
 This is the README file for the DBIx::FullTextSearch module. Please read it fully,
@@ -93,7 +93,7 @@ Installation:
 	However I assume you know how modules and their installation
 	work with Perl. If not, please read the documentation that comes
 	with Perl and any platform specific notes -- I won't be very
-	helpfull unless we make a deal about support contract.
+	helpful unless we make a deal about support contract.
 
 Problems and bug reports:
 	If anything goes wrong during make test, make sure you have the
@@ -127,15 +127,13 @@ Success reports and ideas:
 	DBIx::FullTextSearch(3) man page.
 
 Available:
-	http://www.fi.muni.cz/~adelton/perl/
-	Once the name and the whole existence of the module is okayed by
-	the Perl community, also from each CPAN site in the
-	authors/id/JANPAZ/ directory.
+	http://www.thoughtstore.com/~tjmather/perl/
 
-Copyright: (c) 1999 Jan Pazdziora, adelton@fi.muni.cz. All rights
+Copyright: (c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
+	(c) 1999 Jan Pazdziora, adelton@fi.muni.cz. 
+	All rights
 	reserved. This package is free software; you can redistribute
 	it and/or modify it under the same terms as Perl itself. It is
 	provided as is, without any warranty of it's purpose or
 	usefullness (you can't sue me if the module breaks your toaster
 	or annoys your fish either).
-

@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.50';
+$VERSION = '0.51';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -52,11 +52,12 @@ my %frontend_types = (
 	'table' => 'DBIx::FullTextSearch::Table',
 	);
 
-use vars qw! %BITS_TO_PACK %BITS_TO_INT %BITS_TO_PRECISION %PRECISION_TO_BITS !;
+use vars qw! %BITS_TO_PACK %BITS_TO_INT %PRECISION_TO_BITS !;
 %BITS_TO_PACK = qw! 0 A0 8 C 16 S 32 L !;
 %BITS_TO_INT = qw! 8 tinyint 16 smallint 24 mediumint 32 int 64 bigint !;
-%BITS_TO_PRECISION = qw! 8 4 16 6 24 9 32 11 !;
-%PRECISION_TO_BITS = map { ( $BITS_TO_PRECISION{$_} => $_ ) } keys %BITS_TO_PRECISION;
+#%BITS_TO_PRECISION = qw! 8 4 16 6 24 9 32 11 !;
+#%PRECISION_TO_BITS = map { ( $BITS_TO_PRECISION{$_} => $_ ) } keys %BITS_TO_PRECISION;
+%PRECISION_TO_BITS = qw! 4 8 6 16 8 24 9 24 10 32 11 32 !;
 
 # Open reads in the information about existing index, creates an object
 # in memory
@@ -81,7 +82,7 @@ sub open {
 	$sth->execute or do {
 		if (not grep { $TABLE eq $_ }
 					DBIx::FullTextSearch->list_context_indexes($dbh)) {
-			$errstr = "ConText index $TABLE doesn't exist.";
+			$errstr = "FullTextSearch index $TABLE doesn't exist.";
 			}
 		else { $errstr = $sth->errstr; }
 		return;
@@ -151,6 +152,9 @@ sub create {
 	$self->{'data_table'} = $TABLE.'_data'
 					unless defined $self->{'data_table'};
 
+	# convert array reference to CSV string
+	$self->{'column_name'} = join(",",@{$self->{'column_name'}}) if ref($self->{'column_name'}) eq 'ARRAY';
+
 	my $CREATE_PARAM = <<EOF;
 		create table $TABLE (
 			param varchar(16) binary not null,
@@ -168,7 +172,7 @@ EOF
 		die $@ if $@;
 		bless $self, $front_module;
 		$errstr = $self->_create_tables;
-		if (defined $errstr) { $self->clean_failed_create; return; }
+		if (defined $errstr) { $self->clean_failed_create; warn $errstr; return; }
 		}
 	else { $errstr = "Specified frontend type `$self->{'frontend'}' is unknown\n"; $self->clean_failed_create; return; }
 
@@ -178,7 +182,7 @@ EOF
 		eval "use $back_module";
 		die $@ if $@;
 		$errstr = $back_module->_create_tables($self);
-		if (defined $errstr) { $self->clean_failed_create; return; }
+		if (defined $errstr) { $self->clean_failed_create; warn $errstr; return; }
 		}
 	else { $errstr = "Specified backend type `$self->{'backend'}' is unknown\n"; $self->clean_failed_create; return; }
 	
@@ -209,6 +213,13 @@ sub drop {
 		}
 	1;
 	}
+sub empty {
+  my $self = shift;
+  my $dbh = $self->{'dbh'};
+  $dbh->do("delete from $self->{'data_table'}");
+  $dbh->do("delete from $self->{'word_id_table'}");
+  return 1;
+}
 sub errstr {
 	my $self = shift;
 	ref $self ? $self->{'errstr'} : $errstr;
@@ -392,26 +403,53 @@ sub econtains {
 sub search {
   my ($self, $query) = @_;
 
-  # handle + and - operations on phrases
-  $query =~ s/([\+\-])"/"$1/g;
+  if($self->{'backend'} eq 'phrase'){
+    # phrase backend, must deal with quotes
 
-  my $inQuote = 0;
-  my @phrases = ();
-
-  my @blocks = split(/\"/, $query);
-
-  # deal with quotes
-  for (@blocks){
-    if($inQuote == 0){
-      # we are outside quotes, search for individual words
-      push @phrases, split(' ');
-    } else {
-      # we are inside quote, search for whole phrase
-      push @phrases, $_;
+    # handle + and - operations on phrases
+    $query =~ s/([\+\-])"/"$1/g;
+    
+    my $inQuote = 0;
+    my @phrases = ();
+    
+    my @blocks = split(/\"/, $query);
+    
+    # deal with quotes
+    for (@blocks){
+      if($inQuote == 0){
+	# we are outside quotes, search for individual words
+	push @phrases, split(' ');
+      } else {
+	# we are inside quote, search for whole phrase
+	push @phrases, $_;
+      }
+      $inQuote = ++$inQuote % 2;
     }
-    $inQuote = ++$inQuote % 2;
+    return $self->econtains(@phrases);
+  } else {
+    # not phrase backend, don't deal with quotes
+    my @words = split(' ', $query);
+    return $self->econtains(@words);
   }
-  return $self->econtains(@phrases);
+}
+
+sub document_count {
+  my $self = shift;
+  my $dbh = $self->{'dbh'};
+
+  my $SQL = qq{
+    select distinct doc_id
+    from $self->{'data_table'}
+  };
+  my $ary_ref = $dbh->selectall_arrayref($SQL);
+  return scalar @$ary_ref;
+}
+
+# find all words that are contained in at least $k % of all documents
+sub common_word {
+  my $self = shift;
+  my $k = shift || 80;
+  $self->{'db_backend'}->common_word($k);
 }
 
 1;
@@ -547,6 +585,9 @@ When calling contains, the id (name) of the record will be returned. If
 the id in the_table is numeric, it's directly used as the internal
 numeric id, otherwise a string's way of converting the id to numeric
 form is used.
+
+When creating this index, you'll have to pass it three additionial options,
+table_name, column_name, and column_id_name.
 
 =back
 
@@ -696,13 +737,21 @@ words.
 
         my @docs = $fts->search(qq{+"this is a phrase" -koo +bar foo});
 
-This is a wrapper to econtains which takes a raw search query and parses
-it.
+This is a wrapper to econtains which takes a user input string and parses
+it into can-include, must-include, and must-not-include words and phrases.
 
 =item drop
 
 Removes all tables associated with the index, including the base
 parameter table. Effectivelly destroying the index form the database.
+
+        $fts->drop;
+
+=item empty
+
+Emptys the index so you can reindex the data.
+
+        $fts->empty;
 
 =back
 
@@ -833,10 +882,10 @@ For table frontend; this is the name of the table that will be indexed.
 
 =item column_name
 
-For table frontend; this is the name of the column in the table_name
-that contains the documents -- data to be indexed. It can also have
-a form table.column that will be used if the table_name option is not
-specified.
+For table frontend; this is a reference to an array of columns in the
+table_name that contains the documents -- data to be indexed. It can
+also have a form table.column that will be used if the table_name
+option is not specified.
 
 =item column_id_name
 
@@ -861,7 +910,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.49.
+This documentation describes DBIx::FullTextSearch module version 0.51.
 
 =head1 BUGS
 
@@ -879,7 +928,7 @@ No support for stop words at the moment.
 =head1 AUTHOR
 
 (c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
-http://www.thoughtstore.com/~tjmather/
+http://www.thoughtstore.com/~tjmather/perl/
 New York, NY, USA
 
 (c) 1999 Jan Pazdziora, adelton@fi.muni.cz,
