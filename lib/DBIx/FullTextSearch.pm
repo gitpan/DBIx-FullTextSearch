@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.58';
+$VERSION = '0.59';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -244,11 +244,16 @@ sub drop {
 	}
 	1;
 }
+
 sub empty {
 	my $self = shift;
 	my $dbh = $self->{'dbh'};
-	$dbh->do("delete from $self->{'data_table'}");
-	$dbh->do("delete from $self->{'word_id_table'}");
+
+	for my $tag (keys %$self) {
+		next unless $tag =~ /_table$/;
+		$dbh->do("delete from $self->{$tag}");
+	}
+	$dbh->do("replace into $self->{'table'} values ('max_doc_id', 0)");
 	return 1;
 }
 
@@ -482,7 +487,7 @@ sub econtains {
 	return sort { $res->{$b} <=> $res->{$a} } keys %$res;
 }
 
-sub search {
+sub _search_terms {
 	my ($self, $query) = @_;
   
 	if ($self->{'backend'} eq 'phrase') {
@@ -507,13 +512,22 @@ sub search {
 			}
 			$inQuote = ++$inQuote % 2;
 		}
-		return $self->econtains(@phrases);
+		return @phrases;
 	} else
 		{
 		# not phrase backend, don't deal with quotes
-		my @words = split(' ', $query);
-		return $self->econtains(@words);
+		return split(' ', $query);
 	}
+}
+
+sub search {
+	my ($self, $query) = @_;
+	return $self->econtains($self->_search_terms($query));
+}
+
+sub search_hashref {
+	my ($self, $query) = @_;
+	return $self->econtains_hashref($self->_search_terms($query));
 }
 
 sub document_count {
@@ -820,19 +834,20 @@ Econtains stands for extended contains and allows words to be prefixed
 by plus or minus signs to specify that the word must or mustn't be
 present in the document for it to match.
 
-=item contains_hashref, econtains_hashref
-
-Similar to C<contains> and C<econtains>, only instead of list of document
-names, there methods return a hash reference to a hash where keys are
-the document names and values are the number of occurencies of the
-words.
-
 =item search
 
  my @docs = $fts->search(qq{+"this is a phrase" -koo +bar foo});
 
 This is a wrapper to econtains which takes a user input string and parses
 it into can-include, must-include, and must-not-include words and phrases.
+
+=item contains_hashref, econtains_hashref, search_hashref
+
+Similar to C<contains>, C<econtains> and C<search>,
+only instead of list of document
+names, these methods return a hash reference to a hash where keys are
+the document names and values are the number of occurencies of the
+words.
 
 =item drop
 
@@ -1027,7 +1042,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.58.
+This documentation describes DBIx::FullTextSearch module version 0.59.
 
 =head1 BUGS
 
@@ -1067,6 +1082,8 @@ Fixes, Bug Reports, Docs have been generously provided by:
   Andrew Turner
   Tom Bille
   Tarik Alkasab
+  Joern Reder
+  Dan Collis Puro
   Stephen Patterson
 
 Of course, big thanks to Jan Pazdziora, the original author of this

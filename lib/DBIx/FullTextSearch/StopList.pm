@@ -256,8 +256,8 @@ Removes table associated with the StopList object.
 
 =head1 AUTHOR
 
-Thomas J. Mather, tjmather@alumni.princeton.edu,
-http://www.thoughtstore.com/tjmather/perl/ New York, NY, USA
+T.J. Mather, tjmather@tjmather.com,
+http://www.tjmather.com/
 
 =head1 COPYRIGHT
 

@@ -30,6 +30,7 @@ t/4_index_url_bl.t
 t/5_filter_charset.t
 t/6_stoplist.t
 t/7_table_phrase.t
+t/8_empty.t
 t/test.lib
 test_data/Base.modul
 test_data/Changes.file

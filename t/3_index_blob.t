@@ -6,7 +6,7 @@ $^W = 1;
 
 require 't/test.lib';
 
-print "1..9\n";
+print "1..12\n";
 
 use DBIx::FullTextSearch;
 use Benchmark;
@@ -94,4 +94,21 @@ $expected = '3 4';
 print "Got: @docs\n";
 print "Expected $expected\nnot " unless "@docs" eq $expected;
 print "ok 9\n";
+
+my $query = "krt* -all is -rulez";
+print "Calling search($query)\n";
+@docs = sort($fts->search($query));
+$expected = '3 4';
+print "Got: @docs\n";
+print "Expected $expected\nnot " unless "@docs" eq $expected;
+print "ok 10\n";
+
+$query = "krt* -all is -rulez";
+print "Calling search_hashref($query)\n";
+use Data::Dumper;
+my $hash_ref = $fts->search_hashref($query);
+print "Expected 1\nnot " unless $hash_ref->{3} == 1;
+print "ok 11\n";
+print "Expected 2\nnot " unless $hash_ref->{4} == 2;
+print "ok 12\n";
 
