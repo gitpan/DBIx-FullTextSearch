@@ -151,7 +151,7 @@ sub contains_hashref {
 			while (my ($doc, $data) = $sths[$i]->fetchrow_array){
 				# get positions of words in doc
 				my @positions = unpack $packstring.'*', $data;
-				%{$cur_pos{$doc}} = map { ($_ => 1) } @positions;
+				map { $cur_pos{$doc}->{$_} = 1 } @positions;
 			}
 			if($i > 0){
 				# check to see if word $i comes after word $i-1

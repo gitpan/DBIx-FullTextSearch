@@ -14,6 +14,8 @@ sub create_default {
 
   if($language eq 'english'){
     @stopList = qw/ a about after all also an and any are as at be because been but by can co corp could for from had has have he her his if in inc into is it its last more most mr mrs ms mz no not of on one only or other out over s says she so some such than that the their there they this to up was we were when which who will with would /;
+   } elsif ($language eq 'czech'){
+     @stopList = qw/ a aby ale ani a¾ bude by byl byla bylo být co èi dal¹í do i jak jako je jeho jejich jen je¹tì ji¾ jsem jsme jsou k kde kdy¾ korun která které který kteøí let mezi má mù¾e na nebo není ne¾ o od pak po podle pouze pro proti první pøed pøi roce roku øekl s se si své tak také tedy to tom tím u u¾ v ve v¹ak z za ze ¾e/;
   } elsif ($language eq 'danish'){
     @stopList = qw/ af aldrig alle altid bagved De de der du efter eller en endnu et få fjernt for foran fra gennem god han her hos hovfor hun hurtig hvad hvem hvonår hvor hvordan hvorhen I i imod ja jeg langsom lidt mange måske med meget mellem mere mindre når nede nej nok nu og oppe på rask sammen temmelig til uden udenfor under ved vi /;
   } elsif ($language eq 'dutch'){
@@ -211,7 +213,7 @@ This class method creates a new StopList object.
   my $sl = DBIx::FullTextSearch::StopList->create_default($dbh, $sl_name, $language);
 
 This class method creates a new StopList object, with default words loaded in for the
-given language.  Supported languages include Danish, Dutch, English, Finnish, French,
+given language.  Supported languages include Czech, Danish, Dutch, English, Finnish, French,
 German, Italian, Portuguese, Spanish, and Swedish.
 
 =item open

@@ -1,8 +1,0 @@
-MANIFEST
-Makefile.PL
-MyConText.pm
-create_table
-dump
-t/base.t
-t/base.t.ptkdb
-t/big_data.not

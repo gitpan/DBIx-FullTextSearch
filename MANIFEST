@@ -39,7 +39,6 @@ test_data/Base.modul
 test_data/Changes.file
 test_data/Index.modul
 test_data/MANIFEST
-test_data/MANIFEST.bak
 test_data/Makefile.file
 test_data/Makefile.old.file
 test_data/Makefile.script

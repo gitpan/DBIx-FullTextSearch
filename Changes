@@ -1,3 +1,10 @@
+0.73 March 2nd 2003
+	Fixed bug when searching with wildcards '*' and retrieving multiple 
+	results from different words in the same document using Phrase Backend
+	(Mario Minati)
+
+	Added czech stoplist (Miroslav Suchý)
+
 0.72 December 16th 2002
 	Fixed bug with table/phrase search where phrase would wrap into
 	next column (Kate L Pugh)
