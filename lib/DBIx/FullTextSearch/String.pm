@@ -56,6 +56,12 @@ sub index_document {
 	$self->SUPER::index_document($id, $data);
 }
 
+sub delete_document {
+  my ($self, $doc_id) = @_;
+
+  $self->SUPER::delete_document($self->get_id_for_name($doc_id));
+}
+
 sub contains_hashref {
 	my $self = shift;
 	my $res = $self->SUPER::contains_hashref(@_);

@@ -1,3 +1,9 @@
+0.62 May 09 2002
+	Fix for delete_document() for Column backend (Vladimir Bogdanov)
+
+	Make 'use locale' global, init_env default is now empty.
+	(Joern Reder)
+
 0.61 Feb 22 2002
 	Added docs on internalization.  Changed default search
         spliter to use \w (Hans Poo)

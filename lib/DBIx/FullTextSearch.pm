@@ -10,7 +10,9 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.60';
+$VERSION = '0.62';
+
+use locale;
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -37,7 +39,7 @@ my %DEFAULT_PARAMS = (
 	'index_splitter' => '/(\w{2,$word_length})/g',
 				# can use the $word_length
 				# variable
-	'init_env' => 'use locale'
+	'init_env' => ''
 	);
 my %backend_types = (
 	'blob' => 'DBIx::FullTextSearch::Blob',
@@ -320,7 +322,6 @@ sub parse_and_index_data_count {
 
 	my %words;
 
-	use locale;
 	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
 	my $stoplist = $self->{'stoplist'};
 	my $stemmer = $self->{'stemmer'};
@@ -357,7 +358,6 @@ sub parse_and_index_data_list {
 
 	my %words;
 
-	use locale;
 	my $filter = $self->{'filter'} . ' $data =~ ' . $self->{'index_splitter'};
 
 	my $i = 0;
@@ -991,9 +991,8 @@ conversion to lowercase (yielding case insensitive index).
 
 Because user defined splitter or filter may depend on other things that
 it is reasonable to set before the actual procession of words, you can
-use yet another Perl hook to set things up. The default is
-
-	use locale
+use yet another Perl hook to set things up. The default is no initialization
+hook.
 
 =item stoplist
 
@@ -1069,7 +1068,7 @@ No scoring algorithm implemented.
 =head1 DEVELOPMENT
 
 These modules are under active development.
-If you would like to contribute, please e-mail tj@anidea.com
+If you would like to contribute, please e-mail tjmather@tjmather.com
 
 There are two mailing lists for this module, one for users, and another for developers.  To subscribe,
 visit http://sourceforge.net/mail/?group_id=8645
@@ -1087,13 +1086,14 @@ http://www.tjmather.com/ New York, NY, USA
 
 Fixes, Bug Reports, Docs have been generously provided by:
 
+  Vladimir Bogdanov
   Ade Olonoh
   Kate Pugh
   Sven Paulus
   Andrew Turner
   Tom Bille
-  Tarik Alkasab
   Joern Reder
+  Tarik Alkasab
   Dan Collis Puro
   Tony Bowden
   Stephen Patterson
@@ -1112,9 +1112,6 @@ L<DBIx::FullTextSearch::StopWord>,
 L<Class::DBI::mysql::FullTextSearch>
 
 =head1 OTHER PRODUCTS and why I've written this module
-
-(If you use Java, then I would highly recommend
-looking into Lucene.  For more information, see http://www.lucene.com )
 
 I'm aware of L<DBIx::TextIndex> and L<DBIx::KwIndex>
 modules and about UdmSearch utility, and
