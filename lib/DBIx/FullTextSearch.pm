@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.55';
+$VERSION = '0.57';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -54,12 +54,10 @@ my %frontend_types = (
 	'table' => 'DBIx::FullTextSearch::Table',
 	);
 
-use vars qw! %BITS_TO_PACK %BITS_TO_INT %PRECISION_TO_BITS !;
+use vars qw! %BITS_TO_PACK %BITS_TO_INT %INT_TO_BITS !;
 %BITS_TO_PACK = qw! 0 A0 8 C 16 S 32 L !;
 %BITS_TO_INT = qw! 8 tinyint 16 smallint 24 mediumint 32 int 64 bigint !;
-#%BITS_TO_PRECISION = qw! 8 4 16 6 24 9 32 11 !;
-#%PRECISION_TO_BITS = map { ( $BITS_TO_PRECISION{$_} => $_ ) } keys %BITS_TO_PRECISION;
-%PRECISION_TO_BITS = qw! 4 8 6 16 8 24 9 24 10 32 11 32 !;
+%INT_TO_BITS = map { ($BITS_TO_INT{$_} => $_ ) }keys %BITS_TO_INT;
 
 # Open reads in the information about existing index, creates an object
 # in memory
@@ -625,7 +623,9 @@ would return numbers of all documents containing words starting with
 So here it's user's responsibility to maintain a relation between the
 document numbers and their content, to know that a document 53 is about
 vklady. Perhaps the documents are already stored somewhere and have
-inique numeric id.
+unique numeric id.
+
+Note that the numeric id must be no larger than 2^C<doc_id_bits>.
 
 =item string
 
@@ -1027,7 +1027,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.56.
+This documentation describes DBIx::FullTextSearch module version 0.57.
 
 =head1 BUGS
 
@@ -1054,21 +1054,23 @@ visit http://sourceforge.net/mail/?group_id=8645
 http://www.fi.muni.cz/~adelton/ at Faculty of Informatics, Masaryk University in Brno, Czech
 Republic
 
-(Current Maintainer) Thomas J. Mather, tj@anidea.com,
-http://www.thoughtstore.com/tjmather/ New York, NY, USA
+(Current Maintainer) T.J. Mather, tjmather@tjmather.com,
+http://www.tjmather.com/ New York, NY, USA
 
 =head1 CREDITS
 
-Fixes, Bug Reports have been generously provided by:
+Fixes, Bug Reports, Docs have been generously provided by:
 
   Ade Olonoh
+  Kate Pugh
   Sven Paulus
   Andrew Turner
   Tom Bille
   Tarik Alkasab
   Stephen Patterson
 
-Thanks!
+Of course, big thanks to Jan Pazdziora, the original author of this
+module.  Especially for providing a clean, modular code base!
 
 =head1 COPYRIGHT
 
@@ -1081,7 +1083,10 @@ L<DBI>, ftsadmin, L<DBIx::FullTextSearch::StopWord>
 
 =head1 OTHER PRODUCTS and why I've written this module
 
-I'm aware of C<DBIx::TextIndex> and C<DBIx::KwIndex>
+(If you use Java, then I would highly recommend
+looking into Lucene.  For more information, see http://www.lucene.com )
+
+I'm aware of L<DBIx::TextIndex> and L<DBIx::KwIndex>
 modules and about UdmSearch utility, and
 about htdig and glimpse on the non-database side of the world.
 

@@ -1,3 +1,7 @@
+0.57 Sun Sep  9 16:24:09 EDT 2001
+
+	Fixed bug with Table/Phrase tables (Kate L Pugh)
+
 0.56 Fri Mar 23 13:37:36 EST 2001
 
 	Added optimization for String.pm (thanks to Sven Paulus for patch)

@@ -1,4 +1,4 @@
-CHANGES
+Changes
 MANIFEST
 Makefile.PL
 README
@@ -29,6 +29,7 @@ t/4_index_table.t
 t/4_index_url_bl.t
 t/5_filter_charset.t
 t/6_stoplist.t
+t/7_table_phrase.t
 t/test.lib
 test_data/Base.modul
 test_data/Changes.file

@@ -53,29 +53,6 @@ Main goals were:
 	command line utility to maintain the indexes -- you do not need
 		to write Perl code to do tests or simple things.
 
-Main plans (ToDo):
-	implement the following Scoring Algorithm:
-
-		for a word in a doc
-		      (occurances in doc)                    num docs
-		------------------------------- * log ( ------------------ )
-		(max occur in doc of all words)         num docs with word
-
-	implement Thesaurus (using Linuga::Wordnet???)
-
-	extend the documentation to show how you can use your own
-		splitter and filter to strip down the HTML markup;
-	extend the backends so that one DBIx::FullTextSearch index can store more
-		views of the documents -- for example for indexing
-		mailinglist archives, it'd be nice to index from,
-		subject and body of the messages separately yet in one
-		index, so that you could base the selection critaria on
-		what part of the documents (headers or body in this
-		case) contains the pattern; for HTML document, indexing
-		titles and body in this way seems natural requirement.
-	make benchmarks showing the performance on various data sets and
-		various document types and lengths.
-
 Installation:
 	Download the tar.gz, unpack it, change to the DBIx::FullTextSearch-*
 	directory. Then do
@@ -128,15 +105,11 @@ Problems and bug reports:
 Success reports and ideas:
 	I'll appreciate and ideas and comments you might have about the
 	module.
-	
-	BTW, before you start flaming me that I've written this module
-	when others are available, please read my reasons in the
-	DBIx::FullTextSearch man page.
 
 Available:
-	http://cpan2.org/Asset/display?dist=DBIx-FullTextSearch
+	http://theoryx5.uwinnipeg.ca/mod_perl/cpan-search?distinfo=805
 
-Copyright: (c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
+Copyright: (c) 2000 Thomas J. Mather, tjmather@tjmather.com,
 	(c) 1999 Jan Pazdziora, adelton@fi.muni.cz. 
 	All rights
 	reserved. This package is free software; you can redistribute

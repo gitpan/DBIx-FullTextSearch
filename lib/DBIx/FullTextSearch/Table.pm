@@ -110,8 +110,8 @@ sub _create_tables {
 
 	my $errstr;
 
-	if ($id_type =~ /int\((\d+)\)/) {
-		$fts->{'doc_id_bits'} = $DBIx::FullTextSearch::PRECISION_TO_BITS{$1};
+        if ($id_type =~ /([a-z]*int)/) {
+                $fts->{'doc_id_bits'} = $DBIx::FullTextSearch::INT_TO_BITS{$1};
 		bless $fts, 'DBIx::FullTextSearch::TableNum';
 	}
 	else {
