@@ -33,7 +33,7 @@ my %DEFAULT_PARAMS = (
 	'frontend' => 'none',	# what application frontend we use (how
 				# the index behaves externaly)
 	'filter' => 'map { lc $_ }',
-	'search_splitter' => '/([a-zA-Z_0-9]{2,$word_length}\*?)/g',
+	'search_splitter' => '/(\w{2,$word_length}\*?)/g',
 	'index_splitter' => '/(\w{2,$word_length})/g',
 				# can use the $word_length
 				# variable
@@ -972,7 +972,7 @@ This is similar to the C<index_splitter> method,
 except that it is used in the C<contains_hashref> method 
 when searching for documents instead of when indexing documents.  The default is
 
-       /([a-zA-Z_0-9]{2,$word_length}\*?)/g
+       /(\w{2,$word_length}\*?)/g
 
 Which, unlike the default C<index_splitter>, allows for the wild card character (*).
 
@@ -1028,6 +1028,17 @@ directly used as identifiers, otherwise a conversion to numeric values
 is made.
 
 =back
+
+=head1 NOTES
+
+To handle internationalization, it may help to use the following in your code
+(for example Spanish in Chile):
+
+  use POSIX;
+  my $loc = POSIX::setlocale( &POSIX::LC_ALL, "es_CL" );
+
+I haven't tested this, so I would be interested in hearing whether this
+works.
 
 =head1 ERROR HANDLING
 

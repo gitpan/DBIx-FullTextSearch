@@ -40,7 +40,6 @@ EOF
 EOF
 
 	my $dbh = $fts->{'dbh'};
-	print $CREATE_DATA;
 	$dbh->do($CREATE_DATA) or return $dbh->errstr;
 	push @{$fts->{'created_tables'}}, $fts->{'data_table'};
 	$dbh->do($CREATE_WORD_ID) or return $dbh->errstr;

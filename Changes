@@ -1,3 +1,10 @@
+0.61 Feb 22 2002
+	Added docs on internalization.  Changed default search
+        spliter to use \w (Hans Poo)
+
+	Removed print statement in Phrase.pm left over from 
+	debugging.  (Joern Reder)
+
 0.60 Tue Dec 18 21:43:37 EST 2001
 
 	Removed extranous code in Phrase contains_hashref

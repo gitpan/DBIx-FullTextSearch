@@ -2,6 +2,8 @@ TODO
 
 0.
 	Explore use of Berkeley DB as faster alternative to MySQL.
+	It is likely that Berkeley DB will give a performance
+	increase over MySQL
 
 1.
 	implement searching by substrings, by creating a lookup table
