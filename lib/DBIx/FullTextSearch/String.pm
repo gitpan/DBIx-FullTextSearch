@@ -63,7 +63,7 @@ sub contains_hashref {
 
 	my $doc_id_table = $self->{'doc_id_table'};
 
-	my $data = $self->{'dbh'}->selectall_arrayref("select name, id from $doc_id_table where " . join(' or ', ('id = ?') x keys %$res), {}, keys %$res);
+	my $data = $self->{'dbh'}->selectall_arrayref("select name, id from $doc_id_table where id in (" . join(',', ('?') x keys %$res).")", {}, keys %$res);
 	return { map { ( $_->[0], $res->{$_->[1]} ) } @$data };
 }
 

@@ -60,6 +60,7 @@ close OUT;
 WriteMakefile(
 	NAME =>		'DBIx::FullTextSearch',
 	VERSION_FROM =>	'lib/DBIx/FullTextSearch.pm',
+	clean =>	{ FILES => "testconfig"},
 	PM =>		{ 'lib/DBIx/FullTextSearch.pm' => '$(INST_LIBDIR)/FullTextSearch.pm',
 			'lib/DBIx/FullTextSearch/String.pm' => '$(INST_LIBDIR)/FullTextSearch/String.pm',
 			'lib/DBIx/FullTextSearch/File.pm' => '$(INST_LIBDIR)/FullTextSearch/File.pm',

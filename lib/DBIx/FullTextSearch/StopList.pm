@@ -115,17 +115,15 @@ sub add_stop_word {
 
   $words = [ $words ] unless ref($words) eq 'ARRAY';
 
-  my $SQL = qq{
-INSERT INTO $self->{'table'} (word) VALUES (?)
-};
-
-  my $sth = $dbh->prepare($SQL);
+  my @new_stop_words;
 
   for my $word (@$words){
     next if $self->is_stop_word($word);
-    $sth->execute($word);
+    push @new_stop_words, $word;
     $self->{'stoplist'}->{lc($word)} = 1;
   }
+  my $SQL = "INSERT INTO $self->{'table'} (word) VALUES " . join(',', ('(?)') x @new_stop_words);
+  $dbh->do($SQL,{},@new_stop_words);
 }
 
 sub remove_stop_word {

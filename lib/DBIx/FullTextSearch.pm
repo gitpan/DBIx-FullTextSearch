@@ -567,14 +567,14 @@ sub common_word {
 
 =head1 DESCRIPTION
 
-DBIx::FullTextSearch is a pure man's solution for indexing contents of documents.
+DBIx::FullTextSearch is a flexible solution for indexing contents of documents.
 It uses the MySQL database to store the information about words and
 documents and provides Perl interface for indexing new documents,
 making changes and searching for matches.  For DBIx::FullTextSearch, a document
 is nearly anything -- Perl scalar, file, Web document, database field.
 
 The basic style of interface is shown above. What you need is a MySQL
-database and a DBI with DBD::mysql. Then you create a DBIx::FullTextSearch index
+database and a L<DBI> with L<DBD::mysql>. Then you create a DBIx::FullTextSearch index
 -- a set of tables that maintain all necessary information. Once created
 it can be accessed many times, either for updating the index (adding
 documents) or searching.
@@ -660,18 +660,20 @@ get the document and then parses it normally:
 
 	$fts->index_document('http://www.perl.com/');
 
+Note that the HTML tags themselves are indexed along with the text.
+
 =item table
 
 You can have a DBIx::FullTextSearch index that indexes char or blob fields in MySQL
 table. Since MySQL doesn't support triggers, you have to call the
-index_document method of DBIx::FullTextSearch any time something changes in the
-table. So the sequence probably will be
+C<index_document> method of DBIx::FullTextSearch any time something changes
+in the table. So the sequence probably will be
 
 	$dbh->do('insert into the_table (id, data, other_fields)
 		values (?, ?, ?)', {}, $name, $data, $date_or_something);
 	$fts->index_document($name);
 
-When calling contains, the id (name) of the record will be returned. If
+When calling C<contains>, the id (name) of the record will be returned. If
 the id in the_table is numeric, it's directly used as the internal
 numeric id, otherwise a string's way of converting the id to numeric
 form is used.
@@ -849,7 +851,7 @@ Emptys the index so you can reindex the data.
 
 =head1 INDEX OPTIONS
 
-Here we list the options that may be passed to DBIx::FullTextSearch-E<gt>create call.
+Here we list the options that may be passed to C<create> method.
 These allow to specify the style and storage parameters in great detail.
 
 =over 4
@@ -1025,7 +1027,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.55.
+This documentation describes DBIx::FullTextSearch module version 0.56.
 
 =head1 BUGS
 
@@ -1040,7 +1042,7 @@ No scoring algorithm implemented.
 
 =head1 DEVELOPMENT
 
-These modules are under active development.  Currently a PostgreSQL version is being developed.
+These modules are under active development.
 If you would like to contribute, please e-mail tj@anidea.com
 
 There are two mailing lists for this module, one for users, and another for developers.  To subscribe,
@@ -1060,8 +1062,11 @@ http://www.thoughtstore.com/tjmather/ New York, NY, USA
 Fixes, Bug Reports have been generously provided by:
 
   Ade Olonoh
+  Sven Paulus
   Andrew Turner
+  Tom Bille
   Tarik Alkasab
+  Stephen Patterson
 
 Thanks!
 
@@ -1076,7 +1081,8 @@ L<DBI>, ftsadmin, L<DBIx::FullTextSearch::StopWord>
 
 =head1 OTHER PRODUCTS and why I've written this module
 
-I'm aware of C<DBIx::TextIndex> module and about UdmSearch utility, and
+I'm aware of C<DBIx::TextIndex> and C<DBIx::KwIndex>
+modules and about UdmSearch utility, and
 about htdig and glimpse on the non-database side of the world.
 
 To me, using a database gives reasonable maintenance benefits. With
@@ -1108,14 +1114,6 @@ DBIx::FullTextSearch is a tool that can be deployed in many projects. It's not
 a complete environment since different people have different needs. On
 the other hand, the methods that it provides make it easy to build
 a complete solution on top of this in very short course of time.
-
-I was primarily inspired by the ConText cartrige of Oracle server. Since
-MySQL doesn't support triggers, it showed up that Perl interface will be
-needed. Of course, porting this module to (for example) PostgreSQL
-should be easy, so different name is probably needed. On the other hand,
-the code is sometimes very MySQL specific to make the module work
-efficiently, so I didn't want a name that would suggest that it's
-a generic tool that will work with any SQL database.
 
 =cut
 

@@ -3,9 +3,9 @@
 			  DBIx::FullTextSearch
 			-------------------------
 
-This is the README file for the DBIx::FullTextSearch module. Please read it fully,
-especially if you install or use the module for the first time and have
-some troubles with it. I probably won't be polite if you email me and I
+This is the README file for the DBIx::FullTextSearch module. Please read it
+fully, especially if you install or use the module for the first time and
+have some troubles with it. I probably won't be polite if you email me and I
 will realize that you did not read what I've written to help you to use
 the thing. That includes both the questions that are covered here and
 in the DBIx::FullTextSearch documentation, and the form of the email.
@@ -91,8 +91,8 @@ Installation:
 	will be skipped.
 
 	You need perl at least 5.004, DBI at least 1.0, sufficiently
-	recent MySQL server (like 3.22+) and DBD::mysql sufficiently
-	recent. I myself use 5.004_04 and 5.005_03, 1.13, 3.22.25 and
+	recent MySQL server (like 3.23+) and DBD::mysql sufficiently
+	recent. I myself use 5.005_03 and 5.6.0, 1.14, 3.23.31 and
 	2.0407. The module will probably run on older versions as
 	well, but if you experience problems and you are not sure,
 	upgrade first. Also, make sure you use the latest available
@@ -120,7 +120,7 @@ Problems and bug reports:
 	use of exclamation points is considered rude, so avoid them.
 	Thank you.
 
-	Before you use the module, read the man page DBIx::FullTextSearch(3). If
+	Before you use the module, read the man page DBIx::FullTextSearch. If
 	reporting problems on your own data (after the installation went
 	fine), please describe the situation as clearly as possible.
 	More info is better than less.
@@ -131,10 +131,10 @@ Success reports and ideas:
 	
 	BTW, before you start flaming me that I've written this module
 	when others are available, please read my reasons in the
-	DBIx::FullTextSearch(3) man page.
+	DBIx::FullTextSearch man page.
 
 Available:
-	http://search.cpan.org/search?dist=DBIx-FullTextSearch
+	http://cpan2.org/Asset/display?dist=DBIx-FullTextSearch
 
 Copyright: (c) 2000 Thomas J. Mather, tjmather@alumni.princeton.edu,
 	(c) 1999 Jan Pazdziora, adelton@fi.muni.cz. 

@@ -30,7 +30,7 @@ EOF
 	
 	
 	my $CREATE_WORD_ID = <<EOF;
-		create table $fts->{'word_id_table'} (
+		create table if not exists $fts->{'word_id_table'} (
 			word varchar($fts->{'word_length'}) binary
 				default '' not null,
 			id $DBIx::FullTextSearch::BITS_TO_INT{$fts->{'word_id_bits'}} unsigned not null auto_increment,

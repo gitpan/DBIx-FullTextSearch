@@ -36,10 +36,7 @@ sub add_document {
 			"update $data_table set idx = concat(idx, ?)
 				where word = ?") );
 
-	my $insert_sth = ( defined $self->{'insert_sth'}
-		? $self->{'insert_sth'}
-		: $self->{'insert_sth'} = $dbh->prepare("
-			insert into $data_table values (?, ?)") );
+	my @insert_values;
 
 	my $packstring = $DBIx::FullTextSearch::BITS_TO_PACK{$fts->{'doc_id_bits'}}
 		. $DBIx::FullTextSearch::BITS_TO_PACK{$fts->{'count_bits'}};
@@ -50,10 +47,15 @@ sub add_document {
 		# data
 		my $value = pack $packstring, $id, $words->{$word};
 		my $rows = $update_sth->execute($value, $word);
-		$insert_sth->execute($word, $value) if $rows == 0;
+		push @insert_values, $word, $value if $rows == 0;
 		$num_words += $words->{$word};
 	}
-	
+
+	if(@insert_values){
+		my $sql_str = "insert into $data_table values ". join(',', ('(?, ?)') x (@insert_values/2));
+		$dbh->do($sql_str,{},@insert_values);
+	}
+
 	return $num_words;
 }
 
@@ -81,6 +83,8 @@ sub update_document {
 					where word = ?") );
 
 
+	my @insert_values;
+
 	$dbh->do("lock tables $data_table write");
 
 	my $select_sth = $dbh->prepare("select word from $data_table");
@@ -103,7 +107,7 @@ sub update_document {
 
 		my ($pos, $shift) = $self->find_position($word, $id);
 		if (not defined $pos) {
-			$insert_sth->execute($word, $value);
+			push @insert_values, $word, $value;
 		}
 		else {
 			my $spos = $pos + 1;	# I'm not sure why this
@@ -116,9 +120,16 @@ sub update_document {
 
 	for my $word ( keys %$words ) {
 		my $value = pack $packstring, $id, $words->{$word};
-		$insert_sth->execute($word, $value);
+		push @insert_values, $word, $value;
+#		$insert_sth->execute($word, $value);
 		$num_words++;
 	}
+
+	if(@insert_values){
+		my $sql_str = "insert into $data_table values ". join(',', ('(?, ?)') x (@insert_values/2));
+		$dbh->do($sql_str,{},@insert_values);
+	}
+
 	$dbh->do("unlock tables");
 
 	return $num_words;
