@@ -1,3 +1,7 @@
+0.58 Thu Oct 11 01:45:59 EDT 2001
+
+        Corrected docs, wildcard is '*' not '%'
+
 0.57 Sun Sep  9 16:24:09 EDT 2001
 
 	Fixed bug with Table/Phrase tables (Kate L Pugh)

@@ -10,7 +10,7 @@ use strict;
 
 use vars qw($errstr $VERSION);
 $errstr = undef;
-$VERSION = '0.57';
+$VERSION = '0.58';
 
 my %DEFAULT_PARAMS = (
 	'num_of_docs' => 0,	# statistical value, should be maintained
@@ -615,7 +615,7 @@ content (body) of the document. The code would for example read
 and DBIx::FullTextSearch will remember that the document 53 contains three words.
 When looking for all documents containing word (string) vklad, a call
 
-	my @docs = $fts->contains('vklad%');
+	my @docs = $fts->contains('vklad*');
 
 would return numbers of all documents containing words starting with
 'vklad', 53 among them.
@@ -739,7 +739,7 @@ To allow phrase matching, a B<phrase> backend is available. For each word
 and document number it stores a blob of lists of positions of the word
 in the document. A query
 
-	$fts->contains('kyselk% Mattoni');
+	$fts->contains('kyselk* Mattoni');
 
 then only returns those documents (document names/numbers) where word
 kyselka (or kyselky, or so) is just before word Mattoni.
@@ -807,14 +807,14 @@ backend this is very time consuming process.
 
 =item contains
 
-	my @docs = $fts->contains('sleva', 'strib%');
+	my @docs = $fts->contains('sleva', 'strib*');
 
 Returns list of names (numbers or strings, depending on the frontend)
 of documents that contain some of specified words.
 
 =item econtains
 
-	my @docs = $fts->contains('foo', '+bar%', '-koo');
+	my @docs = $fts->contains('foo', '+bar*', '-koo');
 
 Econtains stands for extended contains and allows words to be prefixed
 by plus or minus signs to specify that the word must or mustn't be
@@ -1027,7 +1027,7 @@ call.
 
 =head1 VERSION
 
-This documentation describes DBIx::FullTextSearch module version 0.57.
+This documentation describes DBIx::FullTextSearch module version 0.58.
 
 =head1 BUGS
 
@@ -1079,7 +1079,8 @@ redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<DBI>, ftsadmin, L<DBIx::FullTextSearch::StopWord>
+L<DBIx::FullTextSearch::StopWord>,
+L<Class::DBI::mysql::FullTextSearch>
 
 =head1 OTHER PRODUCTS and why I've written this module
 
