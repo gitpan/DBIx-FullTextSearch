@@ -14,6 +14,7 @@ print "ok 1\n";
 
 print "We will drop all the tables first\n";
 for (qw! _sl_test_stoplist !) {
+	local $dbh->{'RaiseError'} = 0;
 	local $dbh->{'PrintError'} = 0;
 	$dbh->do("drop table $_");
 }

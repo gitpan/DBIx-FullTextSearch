@@ -1,3 +1,7 @@
+0.541 Thurs Aug 31 12:16:49 EST 2000
+
+	Fixed test suite (6_stoplist.t)
+
 0.54 Tue Aug 29 16:01:12 EST 2000
 
         Fixed test suites (1_create.t and 4_index_table.t) to support MySQL 3.23 versions
